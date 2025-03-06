@@ -48,26 +48,22 @@ export default function KeywordResults({ keywords }: KeywordResultsProps) {
   const keywordData = !keywords ? [] : keywords.map(generateMockData);
 
   return (
-    <div className="w-full bg-white rounded-md border border-gray-200 mt-6">
-      <div className="p-6 border-b border-gray-200">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold text-navy">키워드 조회 결과</h2>
+    <div className="mt-6 w-full rounded-md border border-gray-200">
+      <div className="border-b border-gray-200 p-6">
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="text-navy text-xl font-bold">키워드 조회 결과</h2>
           <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="flex items-center gap-1"
-            >
-              <Download className="w-4 h-4" />
+            <Button size="sm" className="flex items-center gap-1">
+              <Download className="h-4 w-4" />
               다운로드
             </Button>
-            <Button variant="outline" size="sm" onClick={() => {}}>
+            <Button size="sm" onClick={() => {}}>
               검색값초기화
             </Button>
           </div>
         </div>
 
-        <div className="text-sm text-gray-500 mb-2">
+        <div className="mb-2 text-sm text-gray-500">
           ※키워드를 선택하신 후 다운로드가 가능합니다.
           <br />
           ※키워드 클릭시 상세정보 제공
@@ -77,7 +73,7 @@ export default function KeywordResults({ keywords }: KeywordResultsProps) {
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="bg-gray-50 border-b border-gray-200">
+            <tr className="border-b border-gray-200 bg-gray-50">
               <th className="p-3 text-center">
                 <input type="checkbox" />
               </th>
@@ -100,7 +96,7 @@ export default function KeywordResults({ keywords }: KeywordResultsProps) {
               <th className="p-3 text-center">경쟁정도</th>
               <th className="p-3 text-center">월평균노출평균순위</th>
             </tr>
-            <tr className="bg-gray-50 border-b border-gray-200">
+            <tr className="border-b border-gray-200 bg-gray-50">
               <th className="p-2"></th>
               <th className="p-2"></th>
               <th className="p-2"></th>
@@ -173,9 +169,9 @@ export default function KeywordResults({ keywords }: KeywordResultsProps) {
         </table>
       </div>
 
-      <div className="p-6 border-t border-gray-200">
-        <h3 className="text-lg font-bold mb-4">이용안내</h3>
-        <ol className="list-decimal pl-5 space-y-2">
+      <div className="border-t border-gray-200 p-6">
+        <h3 className="mb-4 text-lg font-bold">이용안내</h3>
+        <ol className="list-decimal space-y-2 pl-5">
           <li>원하는 키워드를 넣어주세요</li>
           <li>[입력값 지우기]클릭시 입력한 모든 키워드가 삭제됩니다.</li>
           <li>

@@ -13,10 +13,7 @@ const defaultRequest: DataLabRequest = {
   startDate: "2024-01-01",
   endDate: "2024-12-01",
   timeUnit: "month",
-  keywordGroups: [
-    { groupName: "1", keywords: ["apple"] },
-    // { groupName: "2", keywords: ["2"] },
-  ],
+  keywordGroups: [{ groupName: "1", keywords: ["apple"] }],
   device: "mo",
   ages: [],
 };
@@ -75,7 +72,7 @@ export default function KeywordSearch() {
   };
 
   return (
-    <div className="w-full overflow-hidden rounded-md border border-gray-200 bg-white">
+    <div className="w-full overflow-hidden">
       <div className="p-6">
         <h1 className="text-navy mb-2 text-2xl font-bold">
           키워드허브 - 키워드 검색량 조회기
@@ -83,29 +80,14 @@ export default function KeywordSearch() {
         <p className="mb-6 text-gray-600">
           키워드의 조회수를 확인할 수 있는 키워드 검색량 조회기입니다.
           <br />
-          마피아넷 회원이라면 누구나 무료로 사용 하실 수 있습니다.
+          누구나 무료로 사용 하실 수 있습니다.
         </p>
 
         <Tabs defaultValue="keyword-search" className="w-full">
           <TabsList className="mb-6 grid w-full grid-cols-3">
-            <TabsTrigger
-              value="keyword-search"
-              className="data-[state=active]:bg-gray-100"
-            >
-              키워드 조회기
-            </TabsTrigger>
-            <TabsTrigger
-              value="keyword-combine"
-              className="data-[state=active]:bg-gray-100"
-            >
-              키워드 조합기
-            </TabsTrigger>
-            <TabsTrigger
-              value="related-keywords"
-              className="data-[state=active]:bg-gray-100"
-            >
-              연관키워드
-            </TabsTrigger>
+            <TabsTrigger value="keyword-search">키워드 조회기</TabsTrigger>
+            <TabsTrigger value="keyword-combine">키워드 조합기</TabsTrigger>
+            <TabsTrigger value="related-keywords">연관키워드</TabsTrigger>
           </TabsList>
 
           <TabsContent value="keyword-search" className="space-y-4">
@@ -125,12 +107,8 @@ export default function KeywordSearch() {
             </div>
 
             <div className="flex gap-4">
-              <Button variant="outline" onClick={handleSearch}>
-                조회하기
-              </Button>
-              <Button variant="outline" onClick={handleClear}>
-                입력값지우기
-              </Button>
+              <Button onClick={handleSearch}>조회하기</Button>
+              <Button onClick={handleClear}>입력값지우기</Button>
             </div>
           </TabsContent>
 
