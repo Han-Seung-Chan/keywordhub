@@ -1,34 +1,36 @@
+import ModeToggle from "@/components/mode-toggle";
 import Link from "next/link";
 
 export default function Header() {
   return (
-    <header className="w-full bg-white border-b border-gray-200">
+    <header className="w-full border-b border-gray-200">
       <div className="fixed-layout">
-        <nav className="flex justify-between items-center h-16">
+        <nav className="flex h-16 items-center justify-between">
           <div className="flex space-x-8">
-            <Link href="/" className="text-navy font-semibold text-lg">
+            <Link href="/" className="text-navy text-lg font-semibold">
               키워드허브
             </Link>
           </div>
-          <div className="hidden md:flex space-x-6">
+          <div className="hidden space-x-6 md:flex">
             <Link
               href="/keyword-search"
-              className="text-gray-700 hover:text-primary px-3 py-2 text-sm font-medium"
+              className="hover:text-primary px-3 py-2 text-sm font-medium text-gray-700"
             >
               키워드 조회
             </Link>
             <Link
               href="/keyword-combine"
-              className="text-gray-700 hover:text-primary px-3 py-2 text-sm font-medium"
+              className="hover:text-primary px-3 py-2 text-sm font-medium text-gray-700"
             >
               키워드 조합
             </Link>
             <Link
               href="/related-keywords"
-              className="text-gray-700 hover:text-primary px-3 py-2 text-sm font-medium"
+              className="hover:text-primary px-3 py-2 text-sm font-medium text-gray-700"
             >
               연관 키워드
             </Link>
+            <ModeToggle />
             {/* <Link href="/ad-products" className="text-gray-700 hover:text-primary px-3 py-2 text-sm font-medium">
               광고상품
             </Link> */}
