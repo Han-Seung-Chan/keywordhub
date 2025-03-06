@@ -120,6 +120,6 @@ export default {
         },
       });
     },
-    require("tailwindcss-animate"),
+    import("tailwindcss-animate"),
   ],
 };
