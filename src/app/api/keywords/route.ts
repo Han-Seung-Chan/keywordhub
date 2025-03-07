@@ -39,7 +39,6 @@ const getApiConfig = (): ApiKeywordToolConfig => {
  */
 const fetchKeywordData = async (
   keywords: string[],
-  showDetail: boolean,
   config: ApiKeywordToolConfig,
 ): Promise<KeywordServerResponse> => {
   const uri = "/keywordstool";
@@ -50,8 +49,7 @@ const fetchKeywordData = async (
   // 쿼리 파라미터 설정
   const params = new URLSearchParams();
   params.append("hintKeywords", keywords.join(","));
-  // 무조건 1로 설정
-  params.append("showDetail", showDetail ? "1" : "0");
+  params.append("showDetail", "1");
 
   // URL 및 헤더 구성
   const url = `${config.baseUrl}${uri}?${params.toString()}`;
@@ -85,7 +83,7 @@ export async function POST(request: NextRequest) {
   try {
     // 요청 데이터 파싱
     const data = await request.json();
-    const { keywords, showDetail = true } = data;
+    const { keywords } = data;
 
     // 입력 검증
     if (!keywords || !Array.isArray(keywords) || keywords.length === 0) {
@@ -100,11 +98,7 @@ export async function POST(request: NextRequest) {
       const apiConfig = getApiConfig();
 
       // 키워드 데이터 요청
-      const keywordData = await fetchKeywordData(
-        keywords,
-        showDetail,
-        apiConfig,
-      );
+      const keywordData = await fetchKeywordData(keywords, apiConfig);
 
       return NextResponse.json(keywordData);
     } catch (error: any) {

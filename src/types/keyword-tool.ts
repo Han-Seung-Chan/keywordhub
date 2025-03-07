@@ -32,8 +32,6 @@ export interface KeywordResponse {
   relKeyword: string; // 연관 키워드
   monthlyPcQcCnt: number; // 월간 PC 검색량
   monthlyMobileQcCnt: number; // 월간 모바일 검색량
-
-  // showDetail=1일 경우 아래 필드도 포함
   monthlyAvePcClkCnt?: number; // 월간 평균 PC 클릭수
   monthlyAveMobileClkCnt?: number; // 월간 평균 모바일 클릭수
   monthlyAvePcCtr?: number; // 월간 평균 PC CTR
