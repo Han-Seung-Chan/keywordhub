@@ -1,20 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { DataLabRequest, DataLabResponse } from "@/types/data-lab";
-import { fetchKeywordData } from "@/lib/fetch-keywords";
-import { fetchDatalabData } from "@/lib/fetch-data-lab";
 import { KeywordResponse } from "@/types/keyword-tool";
+import { useKeywordMutation } from "@/query/useKeywordMutation";
+import { useDataLabMutation } from "@/query/useDataLabMutation";
 
 const defaultRequest: DataLabRequest = {
   startDate: "2024-01-01",
   endDate: "2024-12-01",
   timeUnit: "month",
-  keywordGroups: [{ groupName: "1", keywords: ["apple"] }],
+  keywordGroups: [{ groupName: "apple", keywords: ["apple"] }],
   device: "mo",
+  gender: "",
   ages: [],
 };
 
@@ -23,53 +24,82 @@ export default function KeywordSearch() {
   const [formData, setFormData] = useState<DataLabRequest>(defaultRequest);
 
   const [keywordResults, setKeywordResults] = useState<KeywordResponse[]>([]);
-  const [dataLabResult, setDataLabResult] = useState<DataLabResponse>();
+  const [dataLabResult, setDataLabResult] = useState<DataLabResponse | null>(
+    null,
+  );
 
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [activeTab, setActiveTab] = useState<string>("keyword-search");
+
   const [error, setError] = useState<string | null>(null);
+
+  // React Query mutations 사용
+  const keywordMutation = useKeywordMutation();
+  const dataLabMutation = useDataLabMutation();
+
+  // 로딩 상태 통합
+  const isLoading = keywordMutation.isPending || dataLabMutation.isPending;
 
   // 검색 핸들러
   const handleSearch = async () => {
     // 입력값 유효성 검사
-    if (!searchKeyword.trim()) return setError("검색할 키워드를 입력해주세요.");
+    if (!searchKeyword.trim()) {
+      setError("검색할 키워드를 입력해주세요.");
+      return;
+    }
+
+    if (/[^a-zA-Z0-9가-힣\s]/.test(searchKeyword)) {
+      setError("검색어에 특수문자를 사용할 수 없습니다.");
+      return;
+    }
 
     // 줄바꿈 처리
     console.log(searchKeyword.replace(/ /g, "").split("\n"));
 
-    setIsLoading(true);
     setError(null);
 
-    const keywordResult = await fetchKeywordData(searchKeyword);
+    try {
+      // 키워드 데이터 가져오기
+      const keywordResult = await keywordMutation.mutateAsync(searchKeyword);
 
-    if (keywordResult.success) {
-      if (keywordResult.data.length === 0) {
-        setError("검색 결과가 없습니다. 다른 키워드로 시도해 보세요.");
+      if (keywordResult.success) {
+        if (keywordResult.data.length === 0) {
+          setError("검색 결과가 없습니다. 다른 키워드로 시도해 보세요.");
+        }
+        console.log(keywordResult.data);
+        setKeywordResults(keywordResult.data);
+      } else {
+        console.error("키워드 분석 중 오류 발생:", keywordResult.error);
+        setError(
+          keywordResult.error ||
+            "키워드 데이터를 가져오는 중 오류가 발생했습니다.",
+        );
       }
-      console.log(keywordResult.data);
-      setKeywordResults(keywordResult.data);
-    } else {
-      console.error("키워드 분석 중 오류 발생:", keywordResult.error);
-      setError(
-        keywordResult.error ||
-          "키워드 데이터를 가져오는 중 오류가 발생했습니다.",
-      );
-    }
 
-    const dataLabResult = await fetchDatalabData(formData);
-    if (dataLabResult.success) {
-      console.log(dataLabResult.data);
-      setDataLabResult(dataLabResult.data);
-    } else {
-      setError(dataLabResult.error || "데이터를 가져오는 데 실패했습니다.");
-      console.error("API 오류:", dataLabResult.error);
+      // DataLab 데이터 가져오기
+      const dataLabResult = await dataLabMutation.mutateAsync(formData);
+      if (dataLabResult.success) {
+        console.log(dataLabResult.data);
+        setDataLabResult(dataLabResult.data);
+      } else {
+        setError(dataLabResult.error || "데이터를 가져오는 데 실패했습니다.");
+        console.error("API 오류:", dataLabResult.error);
+      }
+    } catch (err) {
+      console.error("검색 처리 중 예외 발생:", err);
+      setError("검색 처리 중 오류가 발생했습니다.");
     }
-
-    setIsLoading(false);
   };
 
-  const handleClear = () => {
+  const handleClear = useCallback(() => {
     setSearchKeyword("");
-  };
+    setKeywordResults([]);
+    setDataLabResult(null);
+    setError(null);
+  }, []);
+
+  const handleTabChange = useCallback((value: string) => {
+    setActiveTab(value);
+  }, []);
 
   return (
     <div className="w-full overflow-hidden">
@@ -83,7 +113,11 @@ export default function KeywordSearch() {
           누구나 무료로 사용 하실 수 있습니다.
         </p>
 
-        <Tabs defaultValue="keyword-search" className="w-full">
+        <Tabs
+          value={activeTab}
+          onValueChange={handleTabChange}
+          className="w-full"
+        >
           <TabsList className="mb-6 grid w-full grid-cols-3">
             <TabsTrigger value="keyword-search">키워드 조회기</TabsTrigger>
             <TabsTrigger value="keyword-combine">키워드 조합기</TabsTrigger>
@@ -96,19 +130,43 @@ export default function KeywordSearch() {
                 placeholder="한 줄에 하나씩 입력해세요. (최대100개까지)"
                 value={searchKeyword}
                 onChange={(e) => setSearchKeyword(e.target.value)}
-                className="mb-4 min-h-[120px]"
+                className="mb-4 h-[150px]"
+                disabled={isLoading}
               />
 
               <div className="flex justify-between">
                 <div className="text-sm text-gray-500">
                   ※ 검색어에 특수문자를 사용할 수 없습니다.
                 </div>
+                <div className="text-sm text-gray-500">
+                  {searchKeyword
+                    ? `${searchKeyword.split("\n").filter(Boolean).length}/100`
+                    : "0/100"}
+                </div>
               </div>
             </div>
 
+            {error && (
+              <div className="mt-4 rounded-md bg-red-50 p-4 text-red-600">
+                {error}
+              </div>
+            )}
+
             <div className="flex gap-4">
-              <Button onClick={handleSearch}>조회하기</Button>
-              <Button onClick={handleClear}>입력값지우기</Button>
+              <Button
+                onClick={handleSearch}
+                disabled={isLoading || !searchKeyword.trim()}
+                className="w-32"
+              >
+                {isLoading ? "처리 중..." : "조회하기"}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={handleClear}
+                disabled={isLoading || !searchKeyword.trim()}
+              >
+                입력값 지우기
+              </Button>
             </div>
           </TabsContent>
 
