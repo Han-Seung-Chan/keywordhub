@@ -1,52 +1,47 @@
 "use client";
 
 import ExcelDownloadButton from "@/components/excel-download";
-import KeywordTable from "@/components/keyword-results/keyword-table";
+import KeywordTable from "@/components/keyword-results/keyword-table/keyword-table";
 import { Button } from "@/components/ui/button";
+import { defaultDataLab } from "@/constants/default-data-lab";
+import { useDataLabQueries } from "@/query/useDataLabQueries";
+import { useKeywordQuery } from "@/query/useKeywordQuery";
+import { useKeywordStore } from "@/store/useKeywordStore";
+import { useEffect, useState } from "react";
 
-interface KeywordResultsProps {
-  keywords?: string[];
-}
+export default function KeywordResults() {
+  const { searchKeyword } = useKeywordStore();
+  const [searchResult, setSearchResult] = useState([]);
 
-interface KeywordData {
-  id: number;
-  keyword: string;
-  pcSearchCount: number;
-  mobileSearchCount: number;
-  totalSearchCount: number;
-  pcBlogCount: number;
-  mobileBlogCount: number;
-  pcClickCount: number;
-  mobileClickCount: number;
-  pcClickRate: number;
-  mobileClickRate: number;
-  competition: string;
-}
+  const { data: keywordData, isLoading: isKeywordLoading } =
+    useKeywordQuery(searchKeyword);
+  const dataLab = useDataLabQueries(defaultDataLab, searchKeyword);
 
-export default function KeywordResults({ keywords }: KeywordResultsProps) {
-  // 예시 데이터 생성
-  const generateMockData = (keyword: string, index: number): KeywordData => {
-    const baseCount = Math.floor(Math.random() * 10000) + 1000;
-    const pcSearchCount = baseCount;
-    const mobileSearchCount = Math.floor(baseCount * 1.5);
+  useEffect(() => {
+    if (!keywordData || !dataLab.pc.data || !dataLab.mobile.data) return;
 
-    return {
-      id: index + 1,
-      keyword,
-      pcSearchCount,
-      mobileSearchCount,
-      totalSearchCount: pcSearchCount + mobileSearchCount,
-      pcBlogCount: Math.floor(pcSearchCount * 0.3),
-      mobileBlogCount: Math.floor(mobileSearchCount * 0.2),
-      pcClickCount: Math.floor(pcSearchCount * 0.4),
-      mobileClickCount: Math.floor(mobileSearchCount * 0.3),
-      pcClickRate: Math.random() * 5 + 1,
-      mobileClickRate: Math.random() * 4 + 0.5,
-      competition: ["낮음", "보통", "높음"][Math.floor(Math.random() * 3)],
-    };
-  };
+    console.log(keywordData);
+    console.log(dataLab.pc.data);
+    console.log(dataLab.mobile.data);
 
-  const keywordData = !keywords ? [] : keywords.map(generateMockData);
+    setSearchResult((prev) => [
+      ...prev,
+      {
+        id: searchResult.length + 1,
+        keyword: searchKeyword,
+        monthlyPcQcCnt: keywordData.data.monthlyPcQcCnt,
+        monthlyAvePcClkCnt: keywordData.data.monthlyAvePcClkCnt,
+        monthlyAvePcCtr: keywordData.data.monthlyAvePcCtr,
+        monthlyMobileQcCnt: keywordData.data.monthlyMobileQcCnt,
+        monthlyAveMobileClkCnt: keywordData.data.monthlyAveMobileClkCnt,
+        monthlyAveMobileCtr: keywordData.data.monthlyAveMobileCtr,
+        compIdx: keywordData.data.compIdx,
+        plAvgDepth: keywordData.data.plAvgDepth,
+        pcYearData: dataLab.pc.data,
+        mobileYearData: dataLab.mobile.data,
+      },
+    ]);
+  }, [keywordData, dataLab.pc.data, dataLab.mobile.data]);
 
   return (
     <div className="mt-6 w-full rounded-md border border-gray-200">
@@ -68,7 +63,7 @@ export default function KeywordResults({ keywords }: KeywordResultsProps) {
         </div>
       </div>
 
-      <KeywordTable keywordData={[]} />
+      <KeywordTable keywordData={searchResult} />
 
       <div className="border-t border-gray-200 p-6">
         <h3 className="mb-4 text-lg font-bold">이용안내</h3>

@@ -1,47 +1,34 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { DataLabRequest, DataLabResponse } from "@/types/data-lab";
-import { KeywordResponse } from "@/types/keyword-tool";
-import { useKeywordMutation } from "@/query/useKeywordMutation";
-import { useDataLabMutation } from "@/query/useDataLabMutation";
-
-const defaultRequest: DataLabRequest = {
-  startDate: "2024-01-01",
-  endDate: "2024-12-01",
-  timeUnit: "month",
-  keywordGroups: [{ groupName: "apple", keywords: ["apple"] }],
-  device: "mo",
-  gender: "",
-  ages: [],
-};
+import { useKeywordQuery } from "@/query/useKeywordQuery";
+import { defaultDataLab } from "@/constants/default-data-lab";
+import { useKeywordStore } from "@/store/useKeywordStore";
+import { useDataLabQueries } from "@/query/useDataLabQueries";
 
 export default function KeywordSearch() {
-  const [searchKeyword, setSearchKeyword] = useState<string>("");
-  const [formData, setFormData] = useState<DataLabRequest>(defaultRequest);
-
-  const [keywordResults, setKeywordResults] = useState<KeywordResponse[]>([]);
-  const [dataLabResult, setDataLabResult] = useState<DataLabResponse | null>(
-    null,
-  );
-
+  const { searchKeyword, setSearchKeyword, clearSearchKeyword } =
+    useKeywordStore();
   const [activeTab, setActiveTab] = useState<string>("keyword-search");
-
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  // React Query mutations 사용
-  const keywordMutation = useKeywordMutation();
-  const dataLabMutation = useDataLabMutation();
+  // 쿼리 실행 여부를 제어하는 상태
+  const [shouldFetchKeyword, setShouldFetchKeyword] = useState(false);
+  const [shouldFetchDataLab, setShouldFetchDataLab] = useState(false);
 
-  // 로딩 상태 통합
-  const isLoading = keywordMutation.isPending || dataLabMutation.isPending;
+  const keywordQuery = useKeywordQuery(searchKeyword, shouldFetchKeyword);
+  const dataLab = useDataLabQueries(
+    defaultDataLab,
+    searchKeyword,
+    shouldFetchDataLab,
+  );
 
   // 검색 핸들러
   const handleSearch = async () => {
-    // 입력값 유효성 검사
     if (!searchKeyword.trim()) {
       setError("검색할 키워드를 입력해주세요.");
       return;
@@ -56,50 +43,40 @@ export default function KeywordSearch() {
     console.log(searchKeyword.replace(/ /g, "").split("\n"));
 
     setError(null);
-
-    try {
-      // 키워드 데이터 가져오기
-      const keywordResult = await keywordMutation.mutateAsync(searchKeyword);
-
-      if (keywordResult.success) {
-        if (keywordResult.data.length === 0) {
-          setError("검색 결과가 없습니다. 다른 키워드로 시도해 보세요.");
-        }
-        console.log(keywordResult.data);
-        setKeywordResults(keywordResult.data);
-      } else {
-        console.error("키워드 분석 중 오류 발생:", keywordResult.error);
-        setError(
-          keywordResult.error ||
-            "키워드 데이터를 가져오는 중 오류가 발생했습니다.",
-        );
-      }
-
-      // DataLab 데이터 가져오기
-      const dataLabResult = await dataLabMutation.mutateAsync(formData);
-      if (dataLabResult.success) {
-        console.log(dataLabResult.data);
-        setDataLabResult(dataLabResult.data);
-      } else {
-        setError(dataLabResult.error || "데이터를 가져오는 데 실패했습니다.");
-        console.error("API 오류:", dataLabResult.error);
-      }
-    } catch (err) {
-      console.error("검색 처리 중 예외 발생:", err);
-      setError("검색 처리 중 오류가 발생했습니다.");
-    }
+    setIsLoading(true);
+    setShouldFetchKeyword(true);
+    setShouldFetchDataLab(true);
   };
 
   const handleClear = useCallback(() => {
-    setSearchKeyword("");
-    setKeywordResults([]);
-    setDataLabResult(null);
+    clearSearchKeyword();
+    setShouldFetchKeyword(false);
+    setShouldFetchDataLab(false);
     setError(null);
   }, []);
 
   const handleTabChange = useCallback((value: string) => {
     setActiveTab(value);
   }, []);
+
+  useEffect(() => {
+    // API 오류 처리
+    const keywordError = keywordQuery.error;
+    const dataLabErrors = dataLab.isError;
+
+    if ((keywordError || dataLabErrors) && !error) {
+      setError("데이터를 가져오는 중 오류가 발생했습니다.");
+      return;
+    }
+
+    setIsLoading(false);
+  }, [
+    keywordQuery.error,
+    dataLab.isError,
+    shouldFetchKeyword,
+    shouldFetchDataLab,
+    error,
+  ]);
 
   return (
     <div className="w-full overflow-hidden">
