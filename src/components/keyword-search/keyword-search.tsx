@@ -80,86 +80,84 @@ export default function KeywordSearch() {
 
   return (
     <div className="w-full overflow-hidden">
-      <div className="p-6">
-        <h1 className="text-navy mb-2 text-2xl font-bold">
-          키워드허브 - 키워드 검색량 조회기
-        </h1>
-        <p className="mb-6 text-gray-600">
-          키워드의 조회수를 확인할 수 있는 키워드 검색량 조회기입니다.
-          <br />
-          누구나 무료로 사용 하실 수 있습니다.
-        </p>
+      <h1 className="text-navy mb-2 text-2xl font-bold">
+        키워드허브 - 키워드 검색량 조회기
+      </h1>
+      <p className="mb-6 text-gray-600">
+        키워드의 조회수를 확인할 수 있는 키워드 검색량 조회기입니다.
+        <br />
+        누구나 무료로 사용 하실 수 있습니다.
+      </p>
 
-        <Tabs
-          value={activeTab}
-          onValueChange={handleTabChange}
-          className="w-full"
-        >
-          <TabsList className="mb-6 grid w-full grid-cols-3">
-            <TabsTrigger value="keyword-search">키워드 조회기</TabsTrigger>
-            <TabsTrigger value="keyword-combine">키워드 조합기</TabsTrigger>
-            <TabsTrigger value="related-keywords">연관키워드</TabsTrigger>
-          </TabsList>
+      <Tabs
+        value={activeTab}
+        onValueChange={handleTabChange}
+        className="w-full"
+      >
+        <TabsList className="mb-6 grid w-full grid-cols-3">
+          <TabsTrigger value="keyword-search">키워드 조회기</TabsTrigger>
+          <TabsTrigger value="keyword-combine">키워드 조합기</TabsTrigger>
+          <TabsTrigger value="related-keywords">연관키워드</TabsTrigger>
+        </TabsList>
 
-          <TabsContent value="keyword-search" className="space-y-4">
-            <div className="mb-6 rounded-md border border-gray-200 p-4">
-              <Textarea
-                placeholder="한 줄에 하나씩 입력해세요. (최대100개까지)"
-                value={searchKeyword}
-                onChange={(e) => setSearchKeyword(e.target.value)}
-                className="mb-4 h-[150px]"
-                disabled={isLoading}
-              />
+        <TabsContent value="keyword-search" className="space-y-4">
+          <div className="mb-6 rounded-md border border-gray-200 p-4">
+            <Textarea
+              placeholder="한 줄에 하나씩 입력해세요. (최대100개까지)"
+              value={searchKeyword}
+              onChange={(e) => setSearchKeyword(e.target.value)}
+              className="mb-4 h-[150px]"
+              disabled={isLoading}
+            />
 
-              <div className="flex justify-between">
-                <div className="text-sm text-gray-500">
-                  ※ 검색어에 특수문자를 사용할 수 없습니다.
-                </div>
-                <div className="text-sm text-gray-500">
-                  {searchKeyword
-                    ? `${searchKeyword.split("\n").filter(Boolean).length}/100`
-                    : "0/100"}
-                </div>
+            <div className="flex justify-between">
+              <div className="text-sm text-gray-500">
+                ※ 검색어에 특수문자를 사용할 수 없습니다.
+              </div>
+              <div className="text-sm text-gray-500">
+                {searchKeyword
+                  ? `${searchKeyword.split("\n").filter(Boolean).length}/100`
+                  : "0/100"}
               </div>
             </div>
+          </div>
 
-            {error && (
-              <div className="mt-4 rounded-md bg-red-50 p-4 text-red-600">
-                {error}
-              </div>
-            )}
-
-            <div className="flex gap-4">
-              <Button
-                onClick={handleSearch}
-                disabled={isLoading || !searchKeyword.trim()}
-                className="w-32"
-              >
-                {isLoading ? "처리 중..." : "조회하기"}
-              </Button>
-              <Button
-                variant="outline"
-                onClick={handleClear}
-                disabled={isLoading || !searchKeyword.trim()}
-              >
-                입력값 지우기
-              </Button>
+          {error && (
+            <div className="mt-4 rounded-md bg-red-50 p-4 text-red-600">
+              {error}
             </div>
-          </TabsContent>
+          )}
 
-          <TabsContent value="keyword-combine">
-            <div className="flex h-40 items-center justify-center text-gray-500">
-              키워드 조합 기능은 이 데모에서 구현되지 않았습니다.
-            </div>
-          </TabsContent>
+          <div className="flex gap-4">
+            <Button
+              onClick={handleSearch}
+              disabled={isLoading || !searchKeyword.trim()}
+              className="w-32"
+            >
+              {isLoading ? "처리 중..." : "조회하기"}
+            </Button>
+            <Button
+              variant="outline"
+              onClick={handleClear}
+              disabled={isLoading || !searchKeyword.trim()}
+            >
+              입력값 지우기
+            </Button>
+          </div>
+        </TabsContent>
 
-          <TabsContent value="related-keywords">
-            <div className="flex h-40 items-center justify-center text-gray-500">
-              연관 키워드 기능은 이 데모에서 구현되지 않았습니다.
-            </div>
-          </TabsContent>
-        </Tabs>
-      </div>
+        <TabsContent value="keyword-combine">
+          <div className="flex h-40 items-center justify-center text-gray-500">
+            키워드 조합 기능은 이 데모에서 구현되지 않았습니다.
+          </div>
+        </TabsContent>
+
+        <TabsContent value="related-keywords">
+          <div className="flex h-40 items-center justify-center text-gray-500">
+            연관 키워드 기능은 이 데모에서 구현되지 않았습니다.
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
