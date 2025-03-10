@@ -28,9 +28,9 @@ export default function KeywordTable({
       dataKey: "keyword",
     },
     {
-      id: "yearSearGraph",
-      label: "1년치 검색량 그래프",
-      dataKey: "yearSearGraph",
+      id: "yearPcGraph",
+      label: "PC 1년 검색량",
+      dataKey: "yearPcGraph",
     },
     {
       id: "monthlyPcQcCnt",
@@ -48,18 +48,23 @@ export default function KeywordTable({
       dataKey: "monthlyAvePcCtr",
     },
     {
+      id: "yearMoGraph",
+      label: "MO 1년 검색량",
+      dataKey: "yearMoGraph",
+    },
+    {
       id: "monthlyMobileQcCnt",
-      label: "월간 Mo 검색량",
+      label: "월간 MO 검색량",
       dataKey: "monthlyMobileQcCnt",
     },
     {
       id: "monthlyAveMobileClkCnt",
-      label: "월간 Mo 클릭 수",
+      label: "월간 MO 클릭 수",
       dataKey: "monthlyAveMobileClkCnt",
     },
     {
       id: "monthlyAveMobileCtr",
-      label: "월간 Mo CTR",
+      label: "월간 MO CTR",
       dataKey: "monthlyAveMobileCtr",
     },
     {
@@ -110,7 +115,7 @@ export default function KeywordTable({
       <div className="overflow-auto rounded-md border">
         <DragDropContext onDragStart={onDragStart} onDragEnd={onDragEnd}>
           <Table className="border-collapse">
-            <HeaderRow headers={headers} draggable={true} />
+            <HeaderRow headers={headers} />
             <DataRows
               keywordData={keywordData}
               columns={headers}

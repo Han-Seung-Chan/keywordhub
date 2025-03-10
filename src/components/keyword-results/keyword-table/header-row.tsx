@@ -7,26 +7,7 @@ interface HeaderRowProps {
   draggable?: boolean;
 }
 
-export function HeaderRow({ headers, draggable = false }: HeaderRowProps) {
-  // 드래그 기능이 없는 기본 헤더 행
-  if (!draggable) {
-    return (
-      <TableHeader>
-        <TableRow className="bg-muted/50">
-          {headers.map((header) => (
-            <TableHead
-              key={header.id}
-              className="border border-gray-200 text-center"
-            >
-              {header.label}
-            </TableHead>
-          ))}
-        </TableRow>
-      </TableHeader>
-    );
-  }
-
-  // 드래그 가능한 헤더 행
+export function HeaderRow({ headers }: HeaderRowProps) {
   return (
     <TableHeader>
       <Droppable
@@ -58,8 +39,7 @@ export function HeaderRow({ headers, draggable = false }: HeaderRowProps) {
                       justifyContent: "center",
                     }}
                   >
-                    <div className="flex items-center justify-center">
-                      {/* 드래그 핸들을 명확하게 설정 */}
+                    <div className="flex h-full items-center justify-center">
                       <div
                         className="mr-1 cursor-grab rounded text-sm"
                         {...provided.dragHandleProps}
