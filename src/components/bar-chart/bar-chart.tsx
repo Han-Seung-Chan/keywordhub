@@ -6,71 +6,24 @@ import {
   CartesianGrid,
   ResponsiveContainer,
   XAxis,
-  YAxis,
 } from "recharts";
 import { format, parse } from "date-fns";
 
 import { ChartContainer, ChartTooltip } from "@/components/ui/chart";
 import { Card, CardContent } from "@/components/ui/card";
-import { DataLabResponse } from "@/types/data-lab";
 
-// PC와 모바일 데이터를 합치는 함수
-const combineData = (pcData: DataLabResponse, mobileData: DataLabResponse) => {
-  if (!pcData?.results?.[0]?.data || !mobileData?.results?.[0]?.data) {
-    return [];
-  }
-
-  const pcDataPoints = pcData.results[0].data;
-  const mobileDataPoints = mobileData.results[0].data;
-
-  // 모든 고유 기간을 수집
-  const allPeriods = [
-    ...new Set([
-      ...pcDataPoints.map((item) => item.period),
-      ...mobileDataPoints.map((item) => item.period),
-    ]),
-  ].sort();
-
-  // 기간별로 PC 및 모바일 데이터를 합친 값 계산
-  return allPeriods.map((period) => {
-    const pcItem = pcDataPoints.find((item) => item.period === period) || {
-      ratio: 0,
-    };
-    const mobileItem = mobileDataPoints.find(
-      (item) => item.period === period,
-    ) || { ratio: 0 };
-
-    // PC와 모바일 비율의 합계 (여기서는 단순 평균 사용)
-    const combinedRatio = (pcItem.ratio + mobileItem.ratio) / 2;
-
-    return {
-      period,
-      ratio: Number.parseFloat(combinedRatio.toFixed(2)),
-      pcRatio: pcItem.ratio,
-      mobileRatio: mobileItem.ratio,
-    };
-  });
-};
-
-export default function MonthlyRatioChart({ pcData, mobileData }) {
-  // PC와 모바일 데이터 합치기
-  const combinedData = combineData(pcData, mobileData);
-
+export default function MonthlyRatioChart({ renderData }) {
   // 데이터 포맷팅
-  const formattedData = combinedData.map((item) => ({
+  const formattedData = renderData.results[0].data.map((item) => ({
     ...item,
-    month: format(parse(item.period, "yyyy-MM-dd", new Date()), "MM"),
-    year: format(parse(item.period, "yyyy-MM-dd", new Date()), "yyyy"),
     mainDisplayMonth: format(
       parse(item.period, "yyyy-MM-dd", new Date()),
       "yy-MM",
     ),
-    formattedRatio: item.ratio,
-    percentageDisplay: `${item.ratio.toFixed(2)}%`,
   }));
 
   return (
-    <Card className="w-full rounded-none py-1">
+    <Card className="w-full rounded-none border-none bg-inherit py-1">
       <CardContent className="p-0">
         <ChartContainer
           config={{
@@ -79,7 +32,7 @@ export default function MonthlyRatioChart({ pcData, mobileData }) {
               color: "hsl(var(--chart-1))",
             },
           }}
-          className="h-21 w-full"
+          className="h-22 w-full"
         >
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
@@ -94,13 +47,14 @@ export default function MonthlyRatioChart({ pcData, mobileData }) {
                 axisLine={false}
                 tick={{ fontSize: 8 }}
                 dy={0}
+                dx={3}
                 tickMargin={0}
                 interval={0}
-                angle={-45}
+                angle={-55}
                 textAnchor="end"
-                height={22}
+                height={25}
               />
-              <YAxis
+              {/* <YAxis
                 tickLine={false}
                 axisLine={false}
                 tickMargin={0}
@@ -111,7 +65,7 @@ export default function MonthlyRatioChart({ pcData, mobileData }) {
                 allowDecimals={false}
                 dx={0}
                 ticks={[0, 25, 50, 75, 100]}
-              />
+              /> */}
               <ChartTooltip
                 cursor={{ fill: "hsl(var(--muted))", opacity: 0.15 }}
                 content={({ active, payload, label }) => {
@@ -119,33 +73,23 @@ export default function MonthlyRatioChart({ pcData, mobileData }) {
                     const item = payload[0].payload;
                     return (
                       <div className="bg-background rounded-md border p-1.5 text-xs shadow-sm">
-                        {/* 툴팁 크기 및 패딩 축소 */}
                         <div className="grid grid-cols-2 gap-1.5">
-                          {/* 그리드 갭 축소 */}
                           <div className="flex flex-col">
-                            <span className="text-muted-foreground text-[0.65rem] uppercase">
+                            <span className="text-muted-foreground text-[0.65rem]">
                               Month
                             </span>
                             <span className="text-foreground font-bold">
-                              {item.month}/{item.year}
+                              {item.mainDisplayMonth}
                             </span>
                           </div>
                           <div className="flex flex-col">
-                            <span className="text-muted-foreground text-[0.65rem] uppercase">
-                              Combined Ratio
+                            <span className="text-muted-foreground text-[0.65rem]">
+                              Ratio
                             </span>
                             <span className="text-foreground font-bold">
-                              {item.ratio.toFixed(2)}%
+                              {item.ratio.toFixed(2)}
                             </span>
                           </div>
-                          {/* <div className="col-span-2 flex flex-col">
-                            <div className="mt-0.5 flex justify-between text-[0.65rem]">
-                              <span>PC: {item.pcRatio.toFixed(2)}%</span>
-                              <span>
-                                Mobile: {item.mobileRatio.toFixed(2)}%
-                              </span>
-                            </div>
-                          </div> */}
                         </div>
                       </div>
                     );
@@ -156,8 +100,8 @@ export default function MonthlyRatioChart({ pcData, mobileData }) {
               <Bar
                 dataKey="ratio"
                 fill="var(--color-ratio, #3b82f6)"
-                radius={[3, 3, 0, 0]} // 막대 모서리 반경 축소
-                maxBarSize={16} // 막대 최대 너비 축소
+                radius={[3, 3, 0, 0]}
+                maxBarSize={20}
               />
             </BarChart>
           </ResponsiveContainer>

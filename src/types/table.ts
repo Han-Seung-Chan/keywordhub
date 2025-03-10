@@ -1,4 +1,4 @@
-import { DataLabRequest } from "@/types/data-lab";
+import { DataLabResponse } from "@/types/data-lab";
 
 export interface KeywordData {
   id: number;
@@ -11,8 +11,8 @@ export interface KeywordData {
   monthlyAveMobileCtr: string;
   compIdx: string;
   plAvgDepth: string;
-  pcYearData: DataLabRequest;
-  mobileYearData: DataLabRequest;
+  pcYearData: DataLabResponse;
+  mobileYearData: DataLabResponse;
 }
 
 // 헤더 정보를 담는 인터페이스

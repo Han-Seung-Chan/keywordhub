@@ -32,17 +32,19 @@ export function DataRows({
   return (
     <TableBody>
       {keywordData.map((item) => (
-        <TableRow key={item.id} className="hover:bg-muted/50">
+        <TableRow key={item.id}>
           {columns.map((column) => {
             // 드래그 중인 헤더에 속한 데이터 셀인지 확인
-            const isDragging = draggingHeaderId === column.parentHeaderId;
-            console.log(column);
+            const isDragging = draggingHeaderId === column.id;
 
-            if (column.dataKey === "yearSearGraph") {
+            if (
+              column.dataKey === "yearPcGraph" ||
+              column.dataKey === "yearMoGraph"
+            ) {
               return (
                 <TableCell
                   key={`${item.id}-${column.id}`}
-                  className="border border-gray-200 p-0 text-center transition-colors duration-200"
+                  className="bg-background border border-gray-200 p-0 text-center duration-200"
                   style={{
                     backgroundColor: isDragging
                       ? "rgba(209, 213, 219, 0.8)"
@@ -50,8 +52,11 @@ export function DataRows({
                   }}
                 >
                   <MonthlyRatioChart
-                    pcData={item.pcYearData}
-                    mobileData={item.mobileYearData}
+                    renderData={
+                      column.dataKey === "yearPcGraph"
+                        ? item.pcYearData
+                        : item.mobileYearData
+                    }
                   />
                 </TableCell>
               );
@@ -60,7 +65,7 @@ export function DataRows({
             return (
               <TableCell
                 key={`${item.id}-${column.id}`}
-                className="border border-gray-200 text-center transition-colors duration-200"
+                className="bg-background border border-gray-200 text-center transition-colors duration-200"
                 style={{
                   backgroundColor: isDragging
                     ? "rgba(209, 213, 219, 0.8)"
