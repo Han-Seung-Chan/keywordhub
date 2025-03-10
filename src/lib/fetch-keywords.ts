@@ -8,7 +8,7 @@ import { KeywordResponse } from "@/types/keyword-tool";
  */
 export async function fetchKeywordData(
   keyword: string,
-): Promise<ApiResult<KeywordResponse[]>> {
+): Promise<ApiResult<KeywordResponse>> {
   try {
     const response = await fetch("/api/keywords", {
       method: "POST",
@@ -50,14 +50,14 @@ export async function fetchKeywordData(
     if (responseData.keywordList.length === 0) {
       return {
         success: true,
-        data: [],
+        data: null,
         error: null,
       };
     }
 
     return {
       success: true,
-      data: responseData.keywordList,
+      data: responseData.keywordList[0],
       error: null,
     };
   } catch (error) {
