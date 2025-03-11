@@ -3,14 +3,14 @@ import { DataLabResponse } from "@/types/data-lab";
 export interface KeywordData {
   id: number;
   keyword: string;
-  monthlyPcQcCnt: string;
-  monthlyAvePcClkCnt: string;
-  monthlyAvePcCtr: string;
-  monthlyMobileQcCnt: string;
-  monthlyAveMobileClkCnt: string;
-  monthlyAveMobileCtr: string;
+  monthlyPcQcCnt: number;
+  monthlyAvePcClkCnt: number;
+  monthlyAvePcCtr: number;
+  monthlyMobileQcCnt: number;
+  monthlyAveMobileClkCnt: number;
+  monthlyAveMobileCtr: number;
   compIdx: string;
-  plAvgDepth: string;
+  plAvgDepth: number;
   pcYearData: DataLabResponse;
   mobileYearData: DataLabResponse;
 }
@@ -19,14 +19,8 @@ export interface KeywordData {
 export interface HeaderInfo {
   id: string;
   label: string;
-  className?: string;
-  dataKey?: string; // 데이터 매핑을 위한 키 추가
+  dataKey: string;
 }
 
 // 열 구조를 나타내는 인터페이스
-export interface ColumnInfo {
-  id: string;
-  label: string;
-  dataKey?: string;
-  parentHeaderId?: string;
-}
+export interface ColumnInfo extends HeaderInfo {}
