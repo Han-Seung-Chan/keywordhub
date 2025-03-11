@@ -4,9 +4,9 @@ import { useState, useCallback } from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import LoadingProgress from "@/components/loading-progress";
 import { useKeywordSearch } from "@/hooks/useKeywordSearch";
-import ErrorMessage from "@/components/common/error-message";
 import KeywordInputForm from "@/components/keyword-search/keyword-input-form";
 import ActionButtons from "@/components/keyword-search/action-buttons";
+import { ErrorMessage } from "@/components/common";
 
 export default function KeywordSearch() {
   const [activeTab, setActiveTab] = useState<string>("keyword-search");

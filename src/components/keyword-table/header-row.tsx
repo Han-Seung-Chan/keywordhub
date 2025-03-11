@@ -1,5 +1,8 @@
+import {
+  Draggable,
+  Droppable,
+} from "@/components/keyword-table/drag-components";
 import { TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Draggable, Droppable } from "./drag-components";
 import { HeaderInfo } from "@/types/table";
 
 interface HeaderRowProps {
