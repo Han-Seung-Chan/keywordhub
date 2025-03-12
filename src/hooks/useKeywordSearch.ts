@@ -1,8 +1,13 @@
-import { useCallback, useEffect, useRef } from "react";
-import { useKeywordQuery } from "@/query/useKeywordQuery";
-import { useDataLabQueries } from "@/query/useDataLabQueries";
+import { useCallback, useRef, useState } from "react";
 import { defaultDataLab } from "@/constants/default-data-lab";
 import { useSharedKeywordState } from "@/store/useSharedKeywordState";
+import { KeywordSearchResult } from "@/store/useSharedKeywordState";
+import { fetchBatchKeywordData } from "@/lib/fetch-keywords";
+import { fetchDatalabData } from "@/lib/fetch-data-lab";
+import { DataLabRequest } from "@/types/data-lab";
+
+// 배치 크기 정의: 한 번에 처리할 키워드 수
+const BATCH_SIZE = 5;
 
 export function useKeywordSearch() {
   // 공유 상태 사용
@@ -19,6 +24,7 @@ export function useKeywordSearch() {
     addKeywordResult,
     setProcessCounts,
     resetAll,
+    addKeywordResults, // 여러 결과를 한 번에 추가하는 함수를 추가해야 함
   } = useSharedKeywordState();
 
   // 최대 허용 키워드 개수
@@ -26,20 +32,12 @@ export function useKeywordSearch() {
 
   // 키워드 처리 상태 관리
   const keywordsToProcess = useRef<string[]>([]);
-  const currentKeywordIndexRef = useRef<number>(0);
-  const currentKeywordRef = useRef<string>("");
+  const batchIndexRef = useRef<number>(0);
+  const [currentBatch, setCurrentBatch] = useState<string[]>([]);
+  const processingRef = useRef<boolean>(false);
 
-  // 키워드 및 데이터랩 API 쿼리
-  const keywordQuery = useKeywordQuery(
-    currentKeywordRef.current,
-    isSearching && !!currentKeywordRef.current,
-  );
-
-  const dataLab = useDataLabQueries(
-    defaultDataLab,
-    currentKeywordRef.current,
-    isSearching && !!currentKeywordRef.current,
-  );
+  // 현재 배치에 대한 결과 저장
+  const batchResultsRef = useRef<Map<string, KeywordSearchResult>>(new Map());
 
   // 검색 유효성 검사
   const validateSearch = useCallback((): boolean => {
@@ -73,6 +71,128 @@ export function useKeywordSearch() {
     return true;
   }, [searchKeyword, setError, maxKeywords]);
 
+  // 효율적인 배치 처리를 위한 함수
+  const processBatch = useCallback(async () => {
+    if (
+      processingRef.current ||
+      batchIndexRef.current >= keywordsToProcess.current.length
+    ) {
+      // 이미 처리 중이거나 모든 배치가 처리된 경우
+      return;
+    }
+
+    processingRef.current = true;
+
+    // 다음 배치 키워드 가져오기
+    const startIndex = batchIndexRef.current;
+    const endIndex = Math.min(
+      startIndex + BATCH_SIZE,
+      keywordsToProcess.current.length,
+    );
+    const currentBatchKeywords = keywordsToProcess.current.slice(
+      startIndex,
+      endIndex,
+    );
+
+    setCurrentBatch(currentBatchKeywords);
+    batchResultsRef.current.clear(); // 이전 배치 결과 초기화
+
+    try {
+      // 키워드 데이터 병렬 요청
+      const keywordResults = await fetchBatchKeywordData(currentBatchKeywords);
+
+      // 데이터랩 요청은 각 키워드별로 개별 요청 필요 (병렬 처리)
+      const dataLabPromises = currentBatchKeywords.map(async (keyword) => {
+        try {
+          const pcRequest: DataLabRequest = {
+            ...defaultDataLab,
+            keywordGroups: [{ groupName: keyword, keywords: [keyword] }],
+            device: "pc",
+          };
+
+          const moRequest: DataLabRequest = {
+            ...defaultDataLab,
+            keywordGroups: [{ groupName: keyword, keywords: [keyword] }],
+            device: "mo",
+          };
+
+          // PC와 모바일 데이터 동시에 요청
+          const [pcResponse, moResponse] = await Promise.all([
+            fetchDatalabData(pcRequest),
+            fetchDatalabData(moRequest),
+          ]);
+
+          const pcData = pcResponse.success ? pcResponse : null;
+          const moData = moResponse.success ? moResponse : null;
+
+          // 키워드 결과 저장
+          const keywordResult: KeywordSearchResult = {
+            keyword,
+            keywordData: keywordResults.get(keyword) || null,
+            pcData: pcData.data,
+            mobileData: moData.data,
+          };
+
+          batchResultsRef.current.set(keyword, keywordResult);
+        } catch (error) {
+          console.error(`데이터랩 요청 실패 (${keyword}):`, error);
+          // 실패한 경우에도 결과 추가 (에러 표시용)
+          batchResultsRef.current.set(keyword, {
+            keyword,
+            keywordData: null,
+            pcData: null,
+            mobileData: null,
+          });
+        }
+      });
+
+      // 모든 데이터랩 요청 완료 대기
+      await Promise.all(dataLabPromises);
+
+      // 배치의 모든 결과를 한 번에 추가
+      const batchResults = Array.from(batchResultsRef.current.values());
+      batchResults.forEach((result) => addKeywordResult(result));
+
+      // 진행 상태 업데이트
+      batchIndexRef.current = endIndex;
+      setProcessCounts(endIndex, keywordsToProcess.current.length);
+
+      // 진행률 계산 (0~100%)
+      const newProgress = Math.min(
+        10 + Math.floor((endIndex / keywordsToProcess.current.length) * 90),
+        99,
+      );
+      setProgress(newProgress);
+
+      // 모든 배치 처리 완료 체크
+      if (endIndex >= keywordsToProcess.current.length) {
+        // 처리 완료
+        setTimeout(() => {
+          setProgress(100);
+          setIsSearching(false);
+        }, 300);
+      } else {
+        // 다음 배치 처리
+        processingRef.current = false;
+        setTimeout(processBatch, 10);
+      }
+    } catch (error) {
+      console.error("배치 처리 중 오류 발생:", error);
+      setError("키워드 검색 중 오류가 발생했습니다.");
+      setIsSearching(false);
+    } finally {
+      processingRef.current = false;
+    }
+  }, [
+    addKeywordResult,
+    addKeywordResults,
+    fetchBatchKeywordData,
+    setError,
+    setIsSearching,
+    setProcessCounts,
+    setProgress,
+  ]);
+
   // 검색 실행 핸들러
   const handleSearch = useCallback(() => {
     // 유효성 검사
@@ -92,17 +212,17 @@ export function useKeywordSearch() {
     setIsSearching(true);
     setProgress(10); // 시작 진행률
 
-    // 참조값 설정
-    currentKeywordIndexRef.current = 0;
+    // 상태 설정
     keywordsToProcess.current = keywords;
+    batchIndexRef.current = 0;
+    processingRef.current = false;
+    setCurrentBatch([]);
+    batchResultsRef.current.clear();
 
     // 처리 상태 업데이트
     setProcessCounts(0, keywords.length);
-
-    // 첫 번째 키워드 처리 시작
-    if (keywords.length > 0) {
-      currentKeywordRef.current = keywords[0];
-    }
+    // 배치 처리 시작
+    setTimeout(processBatch, 0);
   }, [
     searchKeyword,
     validateSearch,
@@ -111,89 +231,23 @@ export function useKeywordSearch() {
     setIsSearching,
     setProgress,
     setProcessCounts,
+    processBatch,
   ]);
 
   // 검색 초기화 핸들러
   const handleClear = useCallback(() => {
     clearSearchKeyword();
     resetAll();
-    currentKeywordIndexRef.current = 0;
+    batchIndexRef.current = 0;
     keywordsToProcess.current = [];
-    currentKeywordRef.current = "";
+    setCurrentBatch([]);
+    batchResultsRef.current.clear();
   }, [clearSearchKeyword, resetAll]);
 
   // 키워드 개수 계산
   const keywordCount = searchKeyword
     ? searchKeyword.split("\n").filter((kw) => kw.trim() !== "").length
     : 0;
-
-  // API 결과 모니터링 및 다음 키워드 처리
-  useEffect(() => {
-    if (!isSearching || !currentKeywordRef.current) return;
-
-    // 현재 키워드의 API 요청이 모두 완료되었는지 확인
-    const keywordDone = !keywordQuery.isLoading;
-    const dataLabDone = !dataLab.isLoading;
-
-    if (keywordDone && dataLabDone) {
-      // 현재 키워드의 결과 저장
-      const result = {
-        keyword: currentKeywordRef.current,
-        keywordData: keywordQuery.data || null,
-        pcData: dataLab.pc.data,
-        mobileData: dataLab.mobile.data,
-      };
-
-      // 공유 스토어에 결과 추가
-      addKeywordResult(result);
-
-      // 다음 키워드로 이동
-      currentKeywordIndexRef.current += 1;
-
-      // 다음 키워드 처리 (직접 호출하지 않고 상태 변경으로 트리거)
-      const nextIndex = currentKeywordIndexRef.current;
-      if (nextIndex < keywordsToProcess.current.length) {
-        // 다음 키워드 설정
-        const nextKeyword = keywordsToProcess.current[nextIndex];
-        setTimeout(() => {
-          currentKeywordRef.current = nextKeyword;
-          setProcessCounts(nextIndex, keywordsToProcess.current.length);
-          // 진행률 계산 (0~100%)
-          const newProgress = Math.min(
-            10 +
-              Math.floor(
-                (currentKeywordIndexRef.current /
-                  keywordsToProcess.current.length) *
-                  90,
-              ),
-            99,
-          );
-          setProgress(newProgress);
-        }, 10);
-      } else {
-        // 모든 키워드 처리 완료
-        setTimeout(() => {
-          setProgress(100);
-          setProcessCounts(
-            keywordsToProcess.current.length,
-            keywordsToProcess.current.length,
-          );
-          setIsSearching(false);
-        }, 300);
-      }
-    }
-  }, [
-    isSearching,
-    keywordQuery.isLoading,
-    keywordQuery.data,
-    dataLab.isLoading,
-    dataLab.pc.data,
-    dataLab.mobile.data,
-    addKeywordResult,
-    setProgress,
-    setProcessCounts,
-    setIsSearching,
-  ]);
 
   return {
     searchKeyword,
@@ -205,8 +259,8 @@ export function useKeywordSearch() {
     handleSearch,
     handleClear,
     maxKeywords,
-    currentKeyword: currentKeywordRef.current,
-    processedCount: currentKeywordIndexRef.current,
+    currentBatch,
+    processedCount: batchIndexRef.current,
     totalKeywords: keywordsToProcess.current.length,
   };
 }

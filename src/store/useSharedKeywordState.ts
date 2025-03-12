@@ -33,6 +33,7 @@ interface SharedKeywordState {
   // 키워드 결과
   keywordResults: KeywordSearchResult[];
   addKeywordResult: (result: KeywordSearchResult) => void;
+  addKeywordResults: (results: KeywordSearchResult[]) => void; // 여러 결과 한번에 추가
 
   // 처리 상태
   processedCount: number;
@@ -45,6 +46,9 @@ interface SharedKeywordState {
 
   // 상태 초기화
   resetAll: () => void;
+
+  // 캐싱 상태
+  cachedResults: Map<string, KeywordSearchResult>;
 }
 
 // 공유 상태 스토어 생성
@@ -71,7 +75,26 @@ export const useSharedKeywordState = create<SharedKeywordState>((set, get) => ({
   addKeywordResult: (result) =>
     set((state) => ({
       keywordResults: [...state.keywordResults, result],
+      // 결과 캐싱 추가
+      cachedResults: new Map(state.cachedResults).set(result.keyword, result),
     })),
+
+  // 여러 결과를 한 번에 추가하는 함수 (성능 최적화)
+  addKeywordResults: (results) =>
+    set((state) => {
+      // 새 캐시 객체 생성
+      const newCache = new Map(state.cachedResults);
+
+      // 각 결과를 캐시에 추가
+      results.forEach((result) => {
+        newCache.set(result.keyword, result);
+      });
+
+      return {
+        keywordResults: [...state.keywordResults, ...results],
+        cachedResults: newCache,
+      };
+    }),
 
   // 처리 상태
   processedCount: 0,
@@ -86,9 +109,12 @@ export const useSharedKeywordState = create<SharedKeywordState>((set, get) => ({
   tableData: [],
   setTableData: (data) => set({ tableData: data }),
 
-  // 상태 초기화
+  // 캐싱 상태 초기화
+  cachedResults: new Map(),
+
+  // 상태 초기화 (캐시는 유지)
   resetAll: () =>
-    set({
+    set((state) => ({
       isSearching: false,
       progress: 0,
       error: null,
@@ -96,5 +122,6 @@ export const useSharedKeywordState = create<SharedKeywordState>((set, get) => ({
       processedCount: 0,
       totalCount: 0,
       tableData: [],
-    }),
+      // 캐시는 유지 - cachedResults: state.cachedResults
+    })),
 }));
