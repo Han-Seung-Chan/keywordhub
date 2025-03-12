@@ -1,86 +1,76 @@
-import { useState, useEffect, useCallback } from "react";
-import { useKeywordStore } from "@/store/useKeywordStore";
-import { useKeywordQuery } from "@/query/useKeywordQuery";
-import { useDataLabQueries } from "@/query/useDataLabQueries";
-import { defaultDataLab } from "@/constants/default-data-lab";
+import { useEffect, useCallback } from "react";
 import { KeywordData } from "@/types/table";
+import { useSharedKeywordState } from "@/store/useSharedKeywordState";
 
 export function useKeywordResults() {
-  const { searchKeyword, clearSearchKeyword } = useKeywordStore();
-  const [searchResults, setSearchResults] = useState<KeywordData[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-
-  // 키워드 쿼리
-  const { data: keywordData, isLoading: isKeywordLoading } =
-    useKeywordQuery(searchKeyword);
-
-  // 데이터랩 쿼리
-  const dataLab = useDataLabQueries(defaultDataLab, searchKeyword);
+  // 공유 상태에서 값 가져오기
+  const {
+    isSearching,
+    progress,
+    keywordResults,
+    processedCount,
+    totalCount,
+    tableData,
+    setTableData,
+    resetAll,
+    clearSearchKeyword,
+  } = useSharedKeywordState();
 
   // 결과 초기화 핸들러
   const handleClearResults = useCallback(() => {
-    setSearchResults([]);
+    resetAll();
     clearSearchKeyword();
-  }, [clearSearchKeyword]);
+  }, [resetAll, clearSearchKeyword]);
 
-  // 엑셀 다운로드 핸들러
-  const handleExcelDownload = useCallback(() => {
-    // 엑셀 다운로드 로직 (실제 구현은 ExcelDownloadButton 컴포넌트에서 처리)
-    console.log("엑셀 다운로드 요청");
-  }, []);
-
-  // 데이터 처리 상태
+  // 키워드 결과 데이터 처리 및 테이블 데이터 변환
   useEffect(() => {
-    setIsLoading(isKeywordLoading || dataLab.isLoading);
-  }, [isKeywordLoading, dataLab.isLoading]);
+    if (keywordResults && keywordResults.length > 0) {
+      // 처리된 결과를 KeywordData 형태로 변환하여 테이블에 표시
+      const newResults: KeywordData[] = keywordResults
+        .filter(
+          (result) => result.keywordData?.success && result.keywordData?.data,
+        )
+        .map((result, index) => {
+          const { keyword, keywordData, pcData, mobileData } = result;
 
-  // 키워드 및 데이터랩 결과가 모두 로드되면 결과 추가
-  useEffect(() => {
-    if (
-      !keywordData ||
-      !dataLab.pc.data ||
-      !dataLab.mobile.data ||
-      !searchKeyword
-    )
-      return;
+          // API 응답에서 필요한 데이터 추출
+          const data = keywordData?.data;
 
-    if (keywordData.success && keywordData.data) {
-      const newResult: KeywordData = {
-        id: searchResults.length + 1,
-        keyword: searchKeyword,
-        monthlyPcQcCnt: keywordData.data.monthlyPcQcCnt,
-        monthlyAvePcClkCnt: keywordData.data.monthlyAvePcClkCnt || 0,
-        monthlyAvePcCtr: keywordData.data.monthlyAvePcCtr || 0,
-        monthlyMobileQcCnt: keywordData.data.monthlyMobileQcCnt,
-        monthlyAveMobileClkCnt: keywordData.data.monthlyAveMobileClkCnt || 0,
-        monthlyAveMobileCtr: keywordData.data.monthlyAveMobileCtr || 0,
-        compIdx: keywordData.data.compIdx || "낮음",
-        plAvgDepth: keywordData.data.plAvgDepth || 0,
-        pcYearData: dataLab.pc.data,
-        mobileYearData: dataLab.mobile.data,
-      };
+          if (!data) {
+            console.warn(
+              `키워드 "${keyword}"에 대한 유효한 데이터가 없습니다.`,
+            );
+            return null;
+          }
 
-      // 중복 결과 방지 (같은 키워드 재검색 시)
-      const exists = searchResults.some(
-        (result) => result.keyword === searchKeyword,
-      );
-      if (!exists) {
-        setSearchResults((prev) => [...prev, newResult]);
-      }
+          return {
+            id: index + 1,
+            keyword: keyword,
+            monthlyPcQcCnt: data.monthlyPcQcCnt || 0,
+            monthlyAvePcClkCnt: data.monthlyAvePcClkCnt || 0,
+            monthlyAvePcCtr: data.monthlyAvePcCtr || 0,
+            monthlyMobileQcCnt: data.monthlyMobileQcCnt || 0,
+            monthlyAveMobileClkCnt: data.monthlyAveMobileClkCnt || 0,
+            monthlyAveMobileCtr: data.monthlyAveMobileCtr || 0,
+            compIdx: data.compIdx || "낮음",
+            plAvgDepth: data.plAvgDepth || 0,
+            pcYearData: pcData,
+            mobileYearData: mobileData,
+          };
+        })
+        .filter(Boolean) as KeywordData[]; // null 값 제거
+
+      setTableData(newResults);
     }
-  }, [
-    keywordData,
-    dataLab.pc.data,
-    dataLab.mobile.data,
-    searchKeyword,
-    searchResults,
-  ]);
+  }, [keywordResults, setTableData]);
 
   return {
-    searchResults,
-    isLoading,
+    searchResults: tableData,
+    isLoading: isSearching,
+    loadingProgress: progress,
+    processedCount,
+    totalKeywords: totalCount,
     handleClearResults,
-    handleExcelDownload,
-    hasResults: searchResults.length > 0,
+    hasResults: tableData.length > 0,
   };
 }

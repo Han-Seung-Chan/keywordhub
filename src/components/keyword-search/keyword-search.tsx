@@ -2,7 +2,6 @@
 
 import { useState, useCallback } from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import LoadingProgress from "@/components/loading-progress";
 import { useKeywordSearch } from "@/hooks/useKeywordSearch";
 import KeywordInputForm from "@/components/keyword-search/keyword-input-form";
 import ActionButtons from "@/components/keyword-search/action-buttons";
@@ -15,16 +14,33 @@ export default function KeywordSearch() {
     searchKeyword,
     setSearchKeyword,
     isLoading,
-    loadingProgress,
     error,
     keywordCount,
     handleSearch,
     handleClear,
+    maxKeywords,
   } = useKeywordSearch();
 
   const handleTabChange = useCallback((value: string) => {
     setActiveTab(value);
   }, []);
+
+  // 키워드 입력 처리 함수 - 최대 라인 수 제한 적용
+  const handleKeywordChange = useCallback(
+    (value: string) => {
+      const lines = value.split("\n");
+
+      // 최대 키워드 개수를 초과하는 경우 입력 제한
+      if (lines.length > maxKeywords) {
+        // 최대 개수까지만 유지
+        const limitedValue = lines.slice(0, maxKeywords).join("\n");
+        setSearchKeyword(limitedValue);
+      } else {
+        setSearchKeyword(value);
+      }
+    },
+    [setSearchKeyword, maxKeywords],
+  );
 
   return (
     <div className="w-full overflow-hidden">
@@ -33,8 +49,7 @@ export default function KeywordSearch() {
       </h1>
       <p className="mb-6 text-gray-600">
         키워드의 조회수를 확인할 수 있는 키워드 검색량 조회기입니다.
-        <br />
-        누구나 무료로 사용 하실 수 있습니다.
+        <br />한 번에 최대 {maxKeywords}개의 키워드를 검색할 수 있습니다.
       </p>
 
       <Tabs
@@ -51,15 +66,10 @@ export default function KeywordSearch() {
         <TabsContent value="keyword-search" className="space-y-4">
           <KeywordInputForm
             value={searchKeyword}
-            onChange={setSearchKeyword}
+            onChange={handleKeywordChange}
             disabled={isLoading}
             keywordCount={keywordCount}
-          />
-
-          <LoadingProgress
-            isLoading={isLoading}
-            progress={loadingProgress}
-            message="검색 데이터 로딩 중..."
+            maxKeywords={maxKeywords}
           />
 
           <ErrorMessage message={error} />

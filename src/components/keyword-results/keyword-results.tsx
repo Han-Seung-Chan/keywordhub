@@ -10,24 +10,43 @@ import { useKeywordResults } from "@/hooks/useKeywordResults";
 import LoadingProgress from "@/components/loading-progress";
 
 export default function KeywordResults() {
-  const { searchResults, isLoading, handleClearResults, hasResults } =
-    useKeywordResults();
+  const {
+    searchResults,
+    isLoading,
+    loadingProgress,
+    processedCount,
+    totalKeywords,
+    handleClearResults,
+    hasResults,
+  } = useKeywordResults();
+
+  // 로딩 상태 메시지 생성
+  const getLoadingMessage = () => {
+    if (totalKeywords > 0) {
+      return `키워드 처리 중... (${processedCount}/${totalKeywords})`;
+    }
+    return "데이터 로딩 중...";
+  };
 
   return (
     <div className="mt-6 w-full rounded-md border border-gray-200">
-      <ResultsHeader onClearResults={handleClearResults} data={searchResults} />
+      <ResultsHeader
+        onClearResults={handleClearResults}
+        data={searchResults}
+        resultCount={searchResults.length}
+      />
 
       {isLoading && (
         <div className="p-4">
           <LoadingProgress
             isLoading={isLoading}
-            progress={90}
-            message="결과 데이터 로딩 중..."
+            progress={loadingProgress}
+            message={getLoadingMessage()}
           />
         </div>
       )}
 
-      {!hasResults && !isLoading ? (
+      {!isLoading && !hasResults ? (
         <EmptyResults />
       ) : (
         <KeywordTable keywordData={searchResults} />
