@@ -1,13 +1,17 @@
 import { useCallback, useRef, useState } from "react";
 import { defaultDataLab } from "@/constants/default-data-lab";
-import { useSharedKeywordState } from "@/store/useSharedKeywordState";
-import { KeywordSearchResult } from "@/store/useSharedKeywordState";
+import {
+  useSharedKeywordState,
+  KeywordSearchResult,
+} from "@/store/useSharedKeywordState";
 import { fetchBatchKeywordData } from "@/lib/fetch-keywords";
-import { fetchDatalabData } from "@/lib/fetch-data-lab";
+import { fetchDatalabDataBatch } from "@/lib/fetch-data-lab";
 import { DataLabRequest } from "@/types/data-lab";
 
 // 배치 크기 정의: 한 번에 처리할 키워드 수
 const BATCH_SIZE = 5;
+// 데이터랩 요청당 최대 키워드 수
+const MAX_KEYWORDS_PER_REQUEST = 5;
 
 export function useKeywordSearch() {
   // 공유 상태 사용
@@ -24,7 +28,7 @@ export function useKeywordSearch() {
     addKeywordResult,
     setProcessCounts,
     resetAll,
-    addKeywordResults, // 여러 결과를 한 번에 추가하는 함수를 추가해야 함
+    addKeywordResults,
   } = useSharedKeywordState();
 
   // 최대 허용 키워드 개수
@@ -71,6 +75,15 @@ export function useKeywordSearch() {
     return true;
   }, [searchKeyword, setError, maxKeywords]);
 
+  // 키워드 배열을 MAX_KEYWORDS_PER_REQUEST 크기의 청크로 분할
+  const createKeywordChunks = (keywords: string[]): string[][] => {
+    const chunks: string[][] = [];
+    for (let i = 0; i < keywords.length; i += MAX_KEYWORDS_PER_REQUEST) {
+      chunks.push(keywords.slice(i, i + MAX_KEYWORDS_PER_REQUEST));
+    }
+    return chunks;
+  };
+
   // 효율적인 배치 처리를 위한 함수
   const processBatch = useCallback(async () => {
     if (
@@ -101,53 +114,53 @@ export function useKeywordSearch() {
       // 키워드 데이터 병렬 요청
       const keywordResults = await fetchBatchKeywordData(currentBatchKeywords);
 
-      // 데이터랩 요청은 각 키워드별로 개별 요청 필요 (병렬 처리)
-      const dataLabPromises = currentBatchKeywords.map(async (keyword) => {
-        try {
-          const pcRequest: DataLabRequest = {
-            ...defaultDataLab,
-            keywordGroups: [{ groupName: keyword, keywords: [keyword] }],
-            device: "pc",
-          };
+      // 키워드를 MAX_KEYWORDS_PER_REQUEST 개씩 그룹화
+      const keywordChunks = createKeywordChunks(currentBatchKeywords);
 
-          const moRequest: DataLabRequest = {
-            ...defaultDataLab,
-            keywordGroups: [{ groupName: keyword, keywords: [keyword] }],
-            device: "mo",
-          };
+      // 각 키워드 청크에 대한 데이터랩 요청 처리
+      for (const chunk of keywordChunks) {
+        // PC 요청 생성
+        const pcRequest: DataLabRequest = {
+          ...defaultDataLab,
+          keywordGroups: chunk.map((keyword) => ({
+            groupName: keyword,
+            keywords: [keyword],
+          })),
+          device: "pc",
+        };
 
-          // PC와 모바일 데이터 동시에 요청
-          const [pcResponse, moResponse] = await Promise.all([
-            fetchDatalabData(pcRequest),
-            fetchDatalabData(moRequest),
-          ]);
+        // MO 요청 생성
+        const moRequest: DataLabRequest = {
+          ...defaultDataLab,
+          keywordGroups: chunk.map((keyword) => ({
+            groupName: keyword,
+            keywords: [keyword],
+          })),
+          device: "mo",
+        };
 
-          const pcData = pcResponse.success ? pcResponse : null;
-          const moData = moResponse.success ? moResponse : null;
+        // 두 요청을 배열로 묶어 한 번에 전송
+        const requests = [pcRequest, moRequest];
+        const [pcResponses, moResponses] =
+          await fetchDatalabDataBatch(requests);
 
-          // 키워드 결과 저장
+        // 응답 처리 및 결과 저장
+        for (let i = 0; i < chunk.length; i++) {
+          const keyword = chunk[i];
+          const pcData = pcResponses[i]?.success ? pcResponses[i].data : null;
+          const moData = moResponses[i]?.success ? moResponses[i].data : null;
+
+          // 키워드 결과 객체 생성
           const keywordResult: KeywordSearchResult = {
             keyword,
             keywordData: keywordResults.get(keyword) || null,
-            pcData: pcData.data,
-            mobileData: moData.data,
+            pcData,
+            mobileData: moData,
           };
 
           batchResultsRef.current.set(keyword, keywordResult);
-        } catch (error) {
-          console.error(`데이터랩 요청 실패 (${keyword}):`, error);
-          // 실패한 경우에도 결과 추가 (에러 표시용)
-          batchResultsRef.current.set(keyword, {
-            keyword,
-            keywordData: null,
-            pcData: null,
-            mobileData: null,
-          });
         }
-      });
-
-      // 모든 데이터랩 요청 완료 대기
-      await Promise.all(dataLabPromises);
+      }
 
       // 배치의 모든 결과를 한 번에 추가
       const batchResults = Array.from(batchResultsRef.current.values());
@@ -186,7 +199,6 @@ export function useKeywordSearch() {
   }, [
     addKeywordResult,
     addKeywordResults,
-    fetchBatchKeywordData,
     setError,
     setIsSearching,
     setProcessCounts,

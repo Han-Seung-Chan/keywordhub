@@ -87,28 +87,87 @@ export async function fetchDatalabData(
 
 /**
  * 여러 데이터랩 요청을 병렬로 처리하는 함수
- * @param requests 데이터랩 요청 배열
- * @returns 각 요청에 대한 결과 배열
+ * @param requests 데이터랩 요청 배열 [pcRequest, moRequest]
+ * @returns 각 요청에 대한 결과 배열 ([pcResponses[], moResponses[]])
  */
 export async function fetchDatalabDataBatch(
   requests: DataLabRequest[],
-): Promise<ApiResult<DataLabResponse>[]> {
-  // 모든 요청을 병렬로 처리
-  const results = await Promise.allSettled(
-    requests.map((request) => fetchDatalabData(request)),
-  );
+): Promise<ApiResult<DataLabResponse>[][]> {
+  // 결과 배열 준비
+  const results: ApiResult<DataLabResponse>[][] = [];
 
-  // 결과 매핑
-  return results.map((result) => {
-    if (result.status === "fulfilled") {
-      return result.value;
-    } else {
-      // 실패한 요청에 대한 오류 생성
-      return {
+  try {
+    // 요청별 처리 (PC와 모바일)
+    for (let i = 0; i < requests.length; i++) {
+      const request = requests[i];
+      const device = request.device || "unknown";
+
+      // 키워드 그룹이 여러 개인 경우, 각각을 개별 요청으로 변환
+      const singleKeywordRequests: DataLabRequest[] = [];
+
+      request.keywordGroups.forEach((group) => {
+        singleKeywordRequests.push({
+          ...request,
+          keywordGroups: [
+            { groupName: group.groupName, keywords: [group.groupName] },
+          ],
+        });
+      });
+
+      // 배치 API에 모든 단일 키워드 요청 전송
+      const batchResponse = await fetch("/api/naver-datalab/batch", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ requests: singleKeywordRequests }),
+      });
+
+      if (!batchResponse.ok) {
+        throw new Error(`API 요청 실패: ${batchResponse.status}`);
+      }
+
+      // 응답 파싱
+      const responseMap = await batchResponse.json();
+
+      // 원래 요청의 각 키워드에 대한 결과 수집
+      const deviceResults: ApiResult<DataLabResponse>[] = [];
+
+      for (const group of request.keywordGroups) {
+        const keyword = group.groupName;
+        const requestId = `${keyword}_${device}`;
+
+        if (responseMap[requestId]) {
+          deviceResults.push(
+            responseMap[requestId] as ApiResult<DataLabResponse>,
+          );
+        } else {
+          // 키워드에 대한 응답이 없는 경우
+          deviceResults.push({
+            success: false,
+            data: null,
+            error: `키워드 "${keyword}"에 대한 응답이 없습니다.`,
+          });
+        }
+      }
+
+      results.push(deviceResults);
+    }
+
+    return results;
+  } catch (error) {
+    console.error("데이터랩 배치 요청 처리 중 오류:", error);
+
+    // 오류 발생 시 모든 요청에 대해 오류 결과 생성
+    return requests.map((request) =>
+      request.keywordGroups.map(() => ({
         success: false,
         data: null,
-        error: result.reason?.message || "데이터랩 요청이 실패했습니다.",
-      };
-    }
-  });
+        error:
+          error instanceof Error
+            ? error.message
+            : "데이터랩 배치 요청이 실패했습니다.",
+      })),
+    );
+  }
 }
