@@ -20,10 +20,8 @@ const ExcelDownloadButton = ({ data }: ExcelDownloadButtonProps) => {
     try {
       setIsDownloading(true);
       if (!data) return false;
-      console.log(data);
 
       const excelData = data.map((item) => {
-        // 기본 데이터 객체 생성
         const rowData = {
           번호: item.id,
           키워드명: item.keyword,
