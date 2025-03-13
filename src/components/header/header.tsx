@@ -13,19 +13,19 @@ export default function Header() {
           </div>
           <div className="hidden space-x-6 md:flex">
             <Link
-              href="/keyword-search"
+              href="/"
               className="hover:text-primary px-3 py-2 text-sm font-medium text-gray-700"
             >
               키워드 조회
             </Link>
             <Link
-              href="/keyword-combine"
+              href="/"
               className="hover:text-primary px-3 py-2 text-sm font-medium text-gray-700"
             >
               키워드 조합
             </Link>
             <Link
-              href="/related-keywords"
+              href="/"
               className="hover:text-primary px-3 py-2 text-sm font-medium text-gray-700"
             >
               연관 키워드
