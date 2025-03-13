@@ -201,7 +201,7 @@ export function useKeywordSearch() {
     // 줄바꿈으로 분리하여 키워드 배열 생성
     const keywords = searchKeyword
       .split("\n")
-      .map((kw) => kw.trim())
+      .map((kw) => kw.trim().replace(/\s+/g, ""))
       .filter((kw) => kw !== "");
 
     console.log(`${keywords.length}개의 키워드 검색 시작:`, keywords);
