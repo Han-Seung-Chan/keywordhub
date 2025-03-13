@@ -1,9 +1,10 @@
 import ExcelDownloadButton from "@/components/excel-download";
 import { Button } from "@/components/ui/button";
+import { KeywordData } from "@/types/table";
 
 interface ResultsHeaderProps {
   onClearResults: () => void;
-  data: any[];
+  data: KeywordData[];
   resultCount?: number;
 }
 
@@ -20,7 +21,7 @@ export default function ResultsHeader({
           {resultCount > 0 && <span className="ml-2">({resultCount}개)</span>}
         </h2>
         <div className="flex gap-2">
-          <ExcelDownloadButton data={data} fileName="keyword_results.xlsx" />
+          <ExcelDownloadButton data={data} />
           <Button
             size="sm"
             onClick={onClearResults}
