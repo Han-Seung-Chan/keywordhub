@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { KeywordData } from "@/types/table";
+import { calculateSearchVolume } from "@/utils/excel-ratio";
 import { Download, Loader2 } from "lucide-react";
 import { useState } from "react";
 import * as XLSX from "xlsx";
@@ -39,7 +40,11 @@ const ExcelDownloadButton = ({ data }: ExcelDownloadButtonProps) => {
         if (item.pcYearData?.results?.[0]?.data) {
           item.pcYearData.results[0].data.forEach((monthData) => {
             const yearMonth = monthData.period.substring(2, 7);
-            rowData[`PC_${yearMonth}`] = monthData.ratio;
+            rowData[`PC_${yearMonth}`] = calculateSearchVolume(
+              monthData.ratio,
+              item,
+              "pcYearData",
+            );
           });
         }
 
@@ -47,7 +52,11 @@ const ExcelDownloadButton = ({ data }: ExcelDownloadButtonProps) => {
         if (item.mobileYearData?.results?.[0]?.data) {
           item.mobileYearData.results[0].data.forEach((monthData) => {
             const yearMonth = monthData.period.substring(2, 7);
-            rowData[`MO_${yearMonth}`] = monthData.ratio;
+            rowData[`MO_${yearMonth}`] = calculateSearchVolume(
+              monthData.ratio,
+              item,
+              "mobileYearData",
+            );
           });
         }
 

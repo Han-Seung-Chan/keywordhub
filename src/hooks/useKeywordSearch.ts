@@ -217,8 +217,6 @@ export function useKeywordSearch() {
       .map((kw) => kw.trim().replace(/\s+/g, ""))
       .filter((kw) => kw !== "");
 
-    console.log(`${keywords.length}개의 키워드 검색 시작:`, keywords);
-
     // 초기화
     resetAll();
     setError(null);
