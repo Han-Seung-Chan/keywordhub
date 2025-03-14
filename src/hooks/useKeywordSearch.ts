@@ -9,9 +9,9 @@ import { fetchDatalabDataBatch } from "@/lib/fetch-data-lab";
 import { DataLabRequest } from "@/types/data-lab";
 
 // 배치 크기 정의: 한 번에 처리할 키워드 수
-const BATCH_SIZE = 5;
+const KEYWORD_BATCH_SIZE = 20;
 // 데이터랩 요청당 최대 키워드 수
-const MAX_KEYWORDS_PER_REQUEST = 5;
+const DATA_LAB_BATCH_SIZE = 5;
 
 export function useKeywordSearch() {
   // 공유 상태 사용
@@ -75,11 +75,11 @@ export function useKeywordSearch() {
     return true;
   }, [searchKeyword, setError, maxKeywords]);
 
-  // 키워드 배열을 MAX_KEYWORDS_PER_REQUEST 크기의 청크로 분할
+  // 키워드 배열을 DATA_LAB_BATCH_SIZE 크기의 청크로 분할
   const createKeywordChunks = (keywords: string[]): string[][] => {
     const chunks: string[][] = [];
-    for (let i = 0; i < keywords.length; i += MAX_KEYWORDS_PER_REQUEST) {
-      chunks.push(keywords.slice(i, i + MAX_KEYWORDS_PER_REQUEST));
+    for (let i = 0; i < keywords.length; i += DATA_LAB_BATCH_SIZE) {
+      chunks.push(keywords.slice(i, i + DATA_LAB_BATCH_SIZE));
     }
     return chunks;
   };
@@ -99,7 +99,7 @@ export function useKeywordSearch() {
     // 다음 배치 키워드 가져오기
     const startIndex = batchIndexRef.current;
     const endIndex = Math.min(
-      startIndex + BATCH_SIZE,
+      startIndex + KEYWORD_BATCH_SIZE,
       keywordsToProcess.current.length,
     );
     const currentBatchKeywords = keywordsToProcess.current.slice(
@@ -114,7 +114,7 @@ export function useKeywordSearch() {
       // 키워드 데이터 병렬 요청
       const keywordResults = await fetchBatchKeywordData(currentBatchKeywords);
 
-      // 키워드를 MAX_KEYWORDS_PER_REQUEST 개씩 그룹화
+      // 키워드를 DATA_LAB_BATCH_SIZE 개씩 그룹화
       const keywordChunks = createKeywordChunks(currentBatchKeywords);
 
       // 각 키워드 청크에 대한 데이터랩 요청 처리

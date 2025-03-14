@@ -4,10 +4,6 @@ import { KeywordData } from "@/types/table";
 export const formatValue = (value: any, dataKey?: string) => {
   if (typeof value === "number") {
     // 퍼센트 값인 경우
-    if (dataKey?.includes("Rate")) {
-      return `${value.toFixed(2)}%`;
-    }
-    // 일반 숫자인 경우
     return value.toLocaleString();
   }
   return value;

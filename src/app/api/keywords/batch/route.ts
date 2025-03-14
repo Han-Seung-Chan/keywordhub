@@ -174,9 +174,7 @@ export async function POST(request: NextRequest) {
       // API 설정 가져오기
       const apiConfig = getApiConfig();
 
-      // 키워드 배열을 최대 20개씩 나누어 병렬 처리
-      // (네이버 API는 한 번에 최대 20개 키워드 처리)
-      const CHUNK_SIZE = 20;
+      const CHUNK_SIZE = 5;
       const chunks = [];
 
       for (let i = 0; i < keywords.length; i += CHUNK_SIZE) {
