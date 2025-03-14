@@ -9,7 +9,7 @@ import { fetchDatalabDataBatch } from "@/lib/fetch-data-lab";
 import { DataLabRequest } from "@/types/data-lab";
 
 // 배치 크기 정의: 한 번에 처리할 키워드 수
-const KEYWORD_BATCH_SIZE = 20;
+const KEYWORD_BATCH_SIZE = 15;
 // 데이터랩 요청당 최대 키워드 수
 const DATA_LAB_BATCH_SIZE = 5;
 
@@ -183,11 +183,12 @@ export function useKeywordSearch() {
         setTimeout(() => {
           setProgress(100);
           setIsSearching(false);
-        }, 300);
+        }, 100);
       } else {
         // 다음 배치 처리
         processingRef.current = false;
-        setTimeout(processBatch, 10);
+        // processBatch();
+        setTimeout(processBatch, 0);
       }
     } catch (error) {
       console.error("배치 처리 중 오류 발생:", error);
@@ -233,8 +234,10 @@ export function useKeywordSearch() {
 
     // 처리 상태 업데이트
     setProcessCounts(0, keywords.length);
+
+    processBatch();
     // 배치 처리 시작
-    setTimeout(processBatch, 0);
+    // setTimeout(processBatch, 0);
   }, [
     searchKeyword,
     validateSearch,

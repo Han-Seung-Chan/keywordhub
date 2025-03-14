@@ -13,7 +13,7 @@ export const defaultHeader: HeaderInfo[] = [
   },
   {
     id: "yearPcGraph",
-    label: "PC 1년 검색량",
+    label: "PC 1년 검색 추이",
     dataKey: "yearPcGraph",
   },
   {
@@ -28,12 +28,12 @@ export const defaultHeader: HeaderInfo[] = [
   },
   {
     id: "monthlyAvePcCtr",
-    label: "월간 PC CTR",
+    label: "월간 PC CTR(%)",
     dataKey: "monthlyAvePcCtr",
   },
   {
     id: "yearMoGraph",
-    label: "MO 1년 검색량",
+    label: "MO 1년 검색 추이",
     dataKey: "yearMoGraph",
   },
   {
@@ -48,17 +48,17 @@ export const defaultHeader: HeaderInfo[] = [
   },
   {
     id: "monthlyAveMobileCtr",
-    label: "월간 MO CTR",
+    label: "월간 MO CTR(%)",
     dataKey: "monthlyAveMobileCtr",
   },
   {
     id: "compIdx",
-    label: "경쟁 정도",
+    label: "입찰 단가 지수",
     dataKey: "compIdx",
   },
   {
     id: "plAvgDepth",
-    label: "월간 광고 노출 수",
+    label: "월간 노출 광고 수",
     dataKey: "plAvgDepth",
   },
 ];

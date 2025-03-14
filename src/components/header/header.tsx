@@ -1,4 +1,3 @@
-import ModeToggle from "@/components/mode-toggle";
 import Link from "next/link";
 
 export default function Header() {
@@ -30,7 +29,7 @@ export default function Header() {
             >
               연관 키워드
             </Link>
-            <ModeToggle />
+            {/* <ModeToggle /> */}
             {/* <Link href="/ad-products" className="text-gray-700 hover:text-primary px-3 py-2 text-sm font-medium">
               광고상품
             </Link> */}

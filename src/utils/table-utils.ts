@@ -3,7 +3,6 @@ import { KeywordData } from "@/types/table";
 // 값 포맷팅
 export const formatValue = (value: any, dataKey?: string) => {
   if (typeof value === "number") {
-    // 퍼센트 값인 경우
     return value.toLocaleString();
   }
   return value;
