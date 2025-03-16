@@ -8,6 +8,8 @@ import {
 } from "@/components/keyword-results";
 import { useKeywordResults } from "@/hooks/useKeywordResults";
 import LoadingProgress from "@/components/loading-progress";
+import { Card, CardContent } from "@/components/ui/card";
+import { Loader2 } from "lucide-react";
 
 export default function KeywordResults() {
   const {
@@ -29,7 +31,7 @@ export default function KeywordResults() {
   };
 
   return (
-    <div className="mt-6 w-full rounded-md border border-gray-200">
+    <Card className="mt-6 w-full gap-0 border border-gray-200 shadow-sm">
       <ResultsHeader
         onClearResults={handleClearResults}
         data={searchResults}
@@ -37,22 +39,35 @@ export default function KeywordResults() {
       />
 
       {isLoading && (
-        <div className="p-4">
-          <LoadingProgress
-            isLoading={isLoading}
-            progress={loadingProgress}
-            message={getLoadingMessage()}
-          />
+        <div className="p-8">
+          <div className="flex flex-col items-center justify-center">
+            <Loader2 className="text-primary mb-4 h-8 w-8 animate-spin" />
+            <h3 className="mb-2 text-lg font-medium text-gray-900">
+              {getLoadingMessage()}
+            </h3>
+            <p className="text-sm text-gray-500">
+              다량의 키워드는 처리 시간이 더 소요될 수 있습니다.
+            </p>
+            <div className="mt-6 w-full max-w-md">
+              <LoadingProgress
+                isLoading={isLoading}
+                progress={loadingProgress}
+                message={getLoadingMessage()}
+              />
+            </div>
+          </div>
         </div>
       )}
 
       {!isLoading && !hasResults ? (
         <EmptyResults />
       ) : (
-        <KeywordTable keywordData={searchResults} />
+        <CardContent className="p-6">
+          <KeywordTable keywordData={searchResults} />
+        </CardContent>
       )}
 
       <UsageGuide />
-    </div>
+    </Card>
   );
 }

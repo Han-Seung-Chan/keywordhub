@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useKeywordSearch } from "@/hooks/useKeywordSearch";
 import KeywordInputForm from "@/components/keyword-search/keyword-input-form";
 import ActionButtons from "@/components/keyword-search/action-buttons";
@@ -45,7 +45,7 @@ export default function KeywordSearch() {
   return (
     <div className="w-full overflow-hidden">
       <h1 className="text-navy mb-2 text-2xl font-bold">
-        키워드허브 - 키워드 검색량 조회기
+        키워드 검색량 조회기
       </h1>
       <p className="mb-6 text-gray-600">
         키워드의 조회수를 확인할 수 있는 키워드 검색량 조회기입니다.
@@ -57,10 +57,16 @@ export default function KeywordSearch() {
         onValueChange={handleTabChange}
         className="w-full"
       >
-        <TabsList className="mb-6 grid w-full grid-cols-3">
-          <TabsTrigger value="keyword-search">키워드 조회기</TabsTrigger>
-          <TabsTrigger value="keyword-combine">키워드 조합기</TabsTrigger>
-          <TabsTrigger value="related-keywords">연관키워드</TabsTrigger>
+        <TabsList className="mb-4 grid h-15 w-full grid-cols-3">
+          <TabsTrigger value="keyword-search" className="h-12 py-3">
+            키워드 조회기
+          </TabsTrigger>
+          <TabsTrigger value="keyword-combine" className="h-12 py-3" disabled>
+            키워드 조합기 (준비중)
+          </TabsTrigger>
+          <TabsTrigger value="related-keywords" className="h-12 py-3" disabled>
+            연관키워드 (준비중)
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="keyword-search" className="space-y-4">
@@ -80,18 +86,6 @@ export default function KeywordSearch() {
             isLoading={isLoading}
             isDisabled={!searchKeyword.trim()}
           />
-        </TabsContent>
-
-        <TabsContent value="keyword-combine">
-          <div className="flex h-40 items-center justify-center text-gray-500">
-            키워드 조합 기능은 이 데모에서 구현되지 않았습니다.
-          </div>
-        </TabsContent>
-
-        <TabsContent value="related-keywords">
-          <div className="flex h-40 items-center justify-center text-gray-500">
-            연관 키워드 기능은 이 데모에서 구현되지 않았습니다.
-          </div>
         </TabsContent>
       </Tabs>
     </div>
