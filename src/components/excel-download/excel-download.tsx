@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { KeywordData } from "@/types/table";
 import { calculateSearchVolume } from "@/utils/excel-ratio";
-import { Download, Loader2 } from "lucide-react";
+import { FileSpreadsheet, Loader2 } from "lucide-react";
 import { useState } from "react";
 import * as XLSX from "xlsx";
 
@@ -106,9 +106,10 @@ const ExcelDownloadButton = ({ data }: ExcelDownloadButtonProps) => {
   return (
     <Button
       size="sm"
-      className="flex items-center gap-1"
-      onClick={handleDownload}
+      variant="outline"
+      className="flex items-center gap-1 text-green-700 hover:bg-green-50 hover:text-green-700"
       disabled={isDownloading}
+      onClick={handleDownload}
     >
       {isDownloading ? (
         <>
@@ -117,10 +118,10 @@ const ExcelDownloadButton = ({ data }: ExcelDownloadButtonProps) => {
         </>
       ) : (
         <>
-          <Download className="mr-2 h-4 w-4" />
+          <FileSpreadsheet className="h-4 w-4" />
           엑셀 다운로드
         </>
-      )}
+      )}{" "}
     </Button>
   );
 };

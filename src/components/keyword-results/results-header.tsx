@@ -1,6 +1,7 @@
+import ExcelDownloadButton from "@/components/excel-download";
 import { Button } from "@/components/ui/button";
 import { KeywordData } from "@/types/table";
-import { FileSpreadsheet, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
 
 interface ResultsHeaderProps {
   onClearResults: () => void;
@@ -27,15 +28,7 @@ export default function ResultsHeader({
           )}
         </h2>
         <div className="flex gap-2">
-          <Button
-            size="sm"
-            variant="outline"
-            className="flex items-center gap-1 text-green-700 hover:bg-green-50 hover:text-green-700"
-            disabled={!hasResults}
-          >
-            <FileSpreadsheet className="h-4 w-4" />
-            엑셀 다운로드
-          </Button>
+          <ExcelDownloadButton data={data} />
           <Button
             size="sm"
             variant="outline"
