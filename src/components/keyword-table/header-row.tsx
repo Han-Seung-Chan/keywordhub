@@ -12,7 +12,7 @@ interface HeaderRowProps {
 
 export function HeaderRow({ headers }: HeaderRowProps) {
   return (
-    <TableHeader>
+    <TableHeader className="sticky top-0 z-20">
       <Droppable
         droppableId="main-headers"
         direction="horizontal"
@@ -22,7 +22,7 @@ export function HeaderRow({ headers }: HeaderRowProps) {
       >
         {(provided) => (
           <TableRow
-            className="bg-muted/50"
+            className="bg-white shadow-sm"
             ref={provided.innerRef}
             {...provided.droppableProps}
           >
@@ -32,7 +32,7 @@ export function HeaderRow({ headers }: HeaderRowProps) {
                   <TableHead
                     ref={provided.innerRef}
                     {...provided.draggableProps}
-                    className="border border-gray-200 text-center transition-colors duration-200"
+                    className="border border-gray-200 bg-white text-center transition-colors duration-200"
                     style={{
                       ...provided.draggableProps.style,
                       backgroundColor: snapshot.isDragging

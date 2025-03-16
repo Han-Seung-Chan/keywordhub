@@ -50,9 +50,9 @@ export default function KeywordTable({ keywordData = [] }: KeywordTableProps) {
           <RefreshCw className="mr-1 h-3 w-3" /> 테이블 순서 초기화
         </Button>
       </div>
-      <div className="overflow-auto rounded-md border">
+      <div className="table-container">
         <DragDropContext onDragStart={onDragStart} onDragEnd={onDragEnd}>
-          <Table className="border-collapse">
+          <Table>
             <HeaderRow headers={headers} />
             <DataRows
               keywordData={keywordData}
