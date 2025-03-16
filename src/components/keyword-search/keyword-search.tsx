@@ -6,9 +6,11 @@ import { useKeywordSearch } from "@/hooks/useKeywordSearch";
 import KeywordInputForm from "@/components/keyword-search/keyword-input-form";
 import ActionButtons from "@/components/keyword-search/action-buttons";
 import { ErrorMessage } from "@/components/common";
+import FeatureAlert from "@/components/common/alert-message";
 
 export default function KeywordSearch() {
   const [activeTab, setActiveTab] = useState<string>("keyword-search");
+  const [isAlertOpen, setIsAlertOpen] = useState(false);
 
   const {
     searchKeyword,
@@ -22,6 +24,12 @@ export default function KeywordSearch() {
   } = useKeywordSearch();
 
   const handleTabChange = useCallback((value: string) => {
+    // 준비 중인 탭을 선택한 경우
+    if (value !== "keyword-search") {
+      setIsAlertOpen(true);
+      return;
+    }
+
     setActiveTab(value);
   }, []);
 
@@ -61,10 +69,10 @@ export default function KeywordSearch() {
           <TabsTrigger value="keyword-search" className="h-12 py-3">
             키워드 조회기
           </TabsTrigger>
-          <TabsTrigger value="keyword-combine" className="h-12 py-3" disabled>
+          <TabsTrigger value="keyword-combine" className="h-12 py-3">
             키워드 조합기 (준비중)
           </TabsTrigger>
-          <TabsTrigger value="related-keywords" className="h-12 py-3" disabled>
+          <TabsTrigger value="related-keywords" className="h-12 py-3">
             연관키워드 (준비중)
           </TabsTrigger>
         </TabsList>
@@ -88,6 +96,12 @@ export default function KeywordSearch() {
           />
         </TabsContent>
       </Tabs>
+
+      {/* 알림 모달 */}
+      <FeatureAlert
+        isOpen={isAlertOpen}
+        onClose={() => setIsAlertOpen(false)}
+      />
     </div>
   );
 }

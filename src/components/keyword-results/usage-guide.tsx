@@ -15,10 +15,10 @@ export default function UsageGuide() {
             <h4 className="font-semibold">키워드 검색</h4>
           </div>
           <ul className="ml-7 list-disc space-y-1 text-sm text-gray-600">
-            <li>키워드를 한 줄에 하나씩 입력하세요</li>
+            <li>키워드를 한 줄에 하나씩 입력</li>
             <li>최대 100개까지 한 번에 검색 가능</li>
-            <li>특수문자는 사용할 수 없습니다</li>
-            <li>유효하지 않은 키워드는 결과에서 제외됩니다</li>
+            <li>특수문자는 사용할 수 없음</li>
+            <li>유효하지 않은 키워드는 결과에서 제외</li>
           </ul>
         </div>
 
