@@ -8,11 +8,32 @@ import {
   XAxis,
 } from "recharts";
 import { format, parse } from "date-fns";
+import { memo } from "react";
 
 import { ChartContainer, ChartTooltip } from "@/components/ui/chart";
 import { Card, CardContent } from "@/components/ui/card";
+import { DataLabResponse } from "@/types/data-lab";
 
-export default function MonthlyRatioChart({ renderData }) {
+// Props 타입 정의 추가
+interface MonthlyRatioChartProps {
+  renderData: DataLabResponse;
+}
+
+// memo로 컴포넌트 감싸기
+const MonthlyRatioChart = memo(({ renderData }: MonthlyRatioChartProps) => {
+  // 데이터가 없는 경우 빈 차트 렌더링
+  if (!renderData.results[0].data.length) {
+    return (
+      <Card className="w-full rounded-none border-none bg-inherit py-1">
+        <CardContent className="p-0">
+          <div className="flex h-14 w-full items-center justify-center text-xs">
+            데이터 없음
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   // 데이터 포맷팅
   const formattedData = renderData.results[0].data.map((item) => ({
     ...item,
@@ -32,7 +53,7 @@ export default function MonthlyRatioChart({ renderData }) {
               color: "hsl(var(--chart-1))",
             },
           }}
-          className="h-22 w-full"
+          className="h-14 w-full"
         >
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
@@ -45,30 +66,18 @@ export default function MonthlyRatioChart({ renderData }) {
                 dataKey="mainDisplayMonth"
                 tickLine={false}
                 axisLine={false}
-                tick={{ fontSize: 8 }}
+                tick={{ fontSize: 6 }}
                 dy={0}
                 dx={3}
                 tickMargin={0}
                 interval={0}
                 angle={-55}
                 textAnchor="end"
-                height={25}
+                height={18}
               />
-              {/* <YAxis
-                tickLine={false}
-                axisLine={false}
-                tickMargin={0}
-                tickFormatter={(value) => `${value}%`}
-                domain={[0, 100]}
-                tick={{ fontSize: 8 }}
-                width={25}
-                allowDecimals={false}
-                dx={0}
-                ticks={[0, 25, 50, 75, 100]}
-              /> */}
               <ChartTooltip
                 cursor={{ fill: "hsl(var(--muted))", opacity: 0.15 }}
-                content={({ active, payload, label }) => {
+                content={({ active, payload }) => {
                   if (active && payload && payload.length) {
                     const item = payload[0].payload;
                     return (
@@ -109,4 +118,9 @@ export default function MonthlyRatioChart({ renderData }) {
       </CardContent>
     </Card>
   );
-}
+});
+
+// displayName 설정
+MonthlyRatioChart.displayName = "MonthlyRatioChart";
+
+export default MonthlyRatioChart;

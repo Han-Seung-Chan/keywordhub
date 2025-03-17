@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useRef, useState, useMemo } from "react";
 import { defaultDataLab } from "@/constants/default-data-lab";
 import {
   useSharedKeywordState,
@@ -12,6 +12,8 @@ import { DataLabRequest } from "@/types/data-lab";
 const KEYWORD_BATCH_SIZE = 15;
 // 데이터랩 요청당 최대 키워드 수
 const DATA_LAB_BATCH_SIZE = 5;
+// 최대 허용 키워드 개수
+const MAX_KEYWORDS = 100;
 
 export function useKeywordSearch() {
   // 공유 상태 사용
@@ -28,61 +30,72 @@ export function useKeywordSearch() {
     addKeywordResult,
     setProcessCounts,
     resetAll,
-    addKeywordResults,
   } = useSharedKeywordState();
 
-  // 최대 허용 키워드 개수
-  const maxKeywords = 100;
-
-  // 키워드 처리 상태 관리
+  // 로컬 상태 및 Ref
   const keywordsToProcess = useRef<string[]>([]);
   const batchIndexRef = useRef<number>(0);
   const [currentBatch, setCurrentBatch] = useState<string[]>([]);
   const processingRef = useRef<boolean>(false);
-
-  // 현재 배치에 대한 결과 저장
   const batchResultsRef = useRef<Map<string, KeywordSearchResult>>(new Map());
+
+  // 키워드 개수 계산 메모이제이션
+  const keywordCount = useMemo(() => {
+    if (!searchKeyword) return 0;
+    return searchKeyword.split("\n").filter((kw) => kw.trim() !== "").length;
+  }, [searchKeyword]);
+
+  // 특수문자 검사 함수 메모이제이션
+  const hasSpecialCharacters = useMemo(() => {
+    return /[^a-zA-Z0-9가-힣\s]/.test(searchKeyword);
+  }, [searchKeyword]);
+
+  // 유효성 검사 - 옵션 객체 메모이제이션
+  const validationStatus = useMemo(() => {
+    const trimmedKeyword = searchKeyword.trim();
+
+    if (!trimmedKeyword) {
+      return { isValid: false, errorMessage: "검색할 키워드를 입력해주세요." };
+    }
+
+    if (hasSpecialCharacters) {
+      return {
+        isValid: false,
+        errorMessage: "검색어에 특수문자를 사용할 수 없습니다.",
+      };
+    }
+
+    if (keywordCount > MAX_KEYWORDS) {
+      return {
+        isValid: false,
+        errorMessage: `최대 ${MAX_KEYWORDS}개의 키워드만 검색할 수 있습니다.`,
+      };
+    }
+
+    if (keywordCount === 0) {
+      return { isValid: false, errorMessage: "검색할 키워드를 입력해주세요." };
+    }
+
+    return { isValid: true, errorMessage: null };
+  }, [searchKeyword, keywordCount, hasSpecialCharacters]);
 
   // 검색 유효성 검사
   const validateSearch = useCallback((): boolean => {
-    if (!searchKeyword.trim()) {
-      setError("검색할 키워드를 입력해주세요.");
+    if (!validationStatus.isValid) {
+      setError(validationStatus.errorMessage);
       return false;
     }
-
-    // 특수문자 검사
-    if (/[^a-zA-Z0-9가-힣\s]/.test(searchKeyword)) {
-      setError("검색어에 특수문자를 사용할 수 없습니다.");
-      return false;
-    }
-
-    // 키워드 개수 확인
-    const keywords = searchKeyword
-      .split("\n")
-      .map((kw) => kw.trim())
-      .filter((kw) => kw !== "");
-
-    if (keywords.length > maxKeywords) {
-      setError(`최대 ${maxKeywords}개의 키워드만 검색할 수 있습니다.`);
-      return false;
-    }
-
-    if (keywords.length === 0) {
-      setError("검색할 키워드를 입력해주세요.");
-      return false;
-    }
-
     return true;
-  }, [searchKeyword, setError, maxKeywords]);
+  }, [validationStatus, setError]);
 
   // 키워드 배열을 DATA_LAB_BATCH_SIZE 크기의 청크로 분할
-  const createKeywordChunks = (keywords: string[]): string[][] => {
+  const createKeywordChunks = useCallback((keywords: string[]): string[][] => {
     const chunks: string[][] = [];
     for (let i = 0; i < keywords.length; i += DATA_LAB_BATCH_SIZE) {
       chunks.push(keywords.slice(i, i + DATA_LAB_BATCH_SIZE));
     }
     return chunks;
-  };
+  }, []);
 
   // 효율적인 배치 처리를 위한 함수
   const processBatch = useCallback(async () => {
@@ -162,8 +175,10 @@ export function useKeywordSearch() {
         }
       }
 
-      // 배치의 모든 결과를 한 번에 추가
+      // 상태 업데이트를 최적화하기 위해 배치 결과를 일괄 처리
       const batchResults = Array.from(batchResultsRef.current.values());
+
+      // 성능 최적화: 가능한 한 적은 횟수로 상태 업데이트
       batchResults.forEach((result) => addKeywordResult(result));
 
       // 진행 상태 업데이트
@@ -179,16 +194,14 @@ export function useKeywordSearch() {
 
       // 모든 배치 처리 완료 체크
       if (endIndex >= keywordsToProcess.current.length) {
-        // 처리 완료
+        // 처리 완료 - 지연 시간을 두어 UI 업데이트를 최적화
         setTimeout(() => {
           setProgress(100);
           setIsSearching(false);
         }, 100);
       } else {
-        // 다음 배치 처리
         processingRef.current = false;
-        // processBatch();
-        setTimeout(processBatch, 0);
+        window.requestAnimationFrame(() => processBatch());
       }
     } catch (error) {
       console.error("배치 처리 중 오류 발생:", error);
@@ -199,7 +212,7 @@ export function useKeywordSearch() {
     }
   }, [
     addKeywordResult,
-    addKeywordResults,
+    createKeywordChunks,
     setError,
     setIsSearching,
     setProcessCounts,
@@ -233,9 +246,8 @@ export function useKeywordSearch() {
     // 처리 상태 업데이트
     setProcessCounts(0, keywords.length);
 
-    processBatch();
-    // 배치 처리 시작
-    // setTimeout(processBatch, 0);
+    // 배치 처리 시작 - 다음 프레임에 예약하여 UI 차단 방지
+    window.requestAnimationFrame(processBatch);
   }, [
     searchKeyword,
     validateSearch,
@@ -257,11 +269,6 @@ export function useKeywordSearch() {
     batchResultsRef.current.clear();
   }, [clearSearchKeyword, resetAll]);
 
-  // 키워드 개수 계산
-  const keywordCount = searchKeyword
-    ? searchKeyword.split("\n").filter((kw) => kw.trim() !== "").length
-    : 0;
-
   return {
     searchKeyword,
     setSearchKeyword,
@@ -271,7 +278,7 @@ export function useKeywordSearch() {
     keywordCount,
     handleSearch,
     handleClear,
-    maxKeywords,
+    maxKeywords: MAX_KEYWORDS,
     currentBatch,
     processedCount: batchIndexRef.current,
     totalKeywords: keywordsToProcess.current.length,

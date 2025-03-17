@@ -1,10 +1,10 @@
 "use client";
 
+import { memo, useState, useCallback, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { KeywordData } from "@/types/table";
 import { calculateSearchVolume } from "@/utils/excel-ratio";
 import { FileSpreadsheet, Loader2 } from "lucide-react";
-import { useState } from "react";
 import * as XLSX from "xlsx";
 
 const FILE_NAME = "keyword_hub.xlsx";
@@ -14,16 +14,20 @@ interface ExcelDownloadButtonProps {
   data: KeywordData[];
 }
 
-const ExcelDownloadButton = ({ data }: ExcelDownloadButtonProps) => {
+const ExcelDownloadButton = memo(({ data }: ExcelDownloadButtonProps) => {
   const [isDownloading, setIsDownloading] = useState(false);
 
-  const handleDownload = async () => {
+  // 데이터 유효성 확인 (memo로 최적화)
+  const isDataValid = useMemo(() => data && data.length > 0, [data]);
+
+  const handleDownload = useCallback(async () => {
+    if (!isDataValid) return;
+
     try {
       setIsDownloading(true);
-      if (!data) return false;
 
       const excelData = data.map((item) => {
-        const rowData = {
+        const rowData: Record<string, any> = {
           번호: item.id,
           키워드명: item.keyword,
           "월간 PC 검색량": item.monthlyPcQcCnt,
@@ -63,11 +67,15 @@ const ExcelDownloadButton = ({ data }: ExcelDownloadButtonProps) => {
         return rowData;
       });
 
+      // 워크북 생성을 위한 비동기 처리
+      await new Promise((resolve) => setTimeout(resolve, 0));
+
       // 워크북 생성
       const workbook = XLSX.utils.book_new();
 
       // 워크시트 생성
       const worksheet = XLSX.utils.json_to_sheet(excelData);
+
       // 열 너비 설정
       const worksheetCols = [
         { wpx: 26 }, // 번호 열
@@ -101,14 +109,14 @@ const ExcelDownloadButton = ({ data }: ExcelDownloadButtonProps) => {
     } finally {
       setIsDownloading(false);
     }
-  };
+  }, [data, isDataValid]);
 
   return (
     <Button
       size="sm"
       variant="outline"
       className="flex items-center gap-1 text-green-700 hover:bg-green-50 hover:text-green-700"
-      disabled={isDownloading}
+      disabled={isDownloading || !isDataValid}
       onClick={handleDownload}
     >
       {isDownloading ? (
@@ -121,9 +129,11 @@ const ExcelDownloadButton = ({ data }: ExcelDownloadButtonProps) => {
           <FileSpreadsheet className="h-4 w-4" />
           엑셀 다운로드
         </>
-      )}{" "}
+      )}
     </Button>
   );
-};
+});
+
+ExcelDownloadButton.displayName = "ExcelDownloadButton";
 
 export default ExcelDownloadButton;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { Table } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { RefreshCw, GripVertical } from "lucide-react";
@@ -17,7 +17,11 @@ interface KeywordTableProps {
 
 export default function KeywordTable({ keywordData = [] }: KeywordTableProps) {
   const [isClient, setIsClient] = useState(false);
-  const hasResults = keywordData.length > 0;
+
+  const hasResults = useMemo(
+    () => keywordData.length > 0,
+    [keywordData.length],
+  );
 
   const initialHeadersRef = useRef<HeaderInfo[]>(defaultHeader);
 
@@ -31,9 +35,26 @@ export default function KeywordTable({ keywordData = [] }: KeywordTableProps) {
     initialHeaders: initialHeadersRef.current,
   });
 
+  const handleResetOrder = useCallback(() => {
+    resetHeaderOrder();
+  }, [resetHeaderOrder]);
+
   useEffect(() => {
     setIsClient(true);
   }, []);
+
+  const InfoMessage = useMemo(() => {
+    if (!hasResults) return null;
+
+    return (
+      <div className="text-xs text-gray-500">
+        <span className="flex h-full items-center gap-1">
+          <GripVertical className="h-3 w-3" />
+          헤더를 드래그하여 테이블 컬럼 순서를 변경할 수 있습니다.
+        </span>
+      </div>
+    );
+  }, [hasResults]);
 
   if (!isClient) {
     return null;
@@ -42,19 +63,12 @@ export default function KeywordTable({ keywordData = [] }: KeywordTableProps) {
   return (
     <div className="w-full">
       <div className="my-2 flex content-center justify-between">
-        {hasResults && (
-          <div className="text-xs text-gray-500">
-            <span className="flex items-center gap-1">
-              <GripVertical className="h-3 w-3" />
-              헤더를 드래그하여 테이블 컬럼 순서를 변경할 수 있습니다.
-            </span>
-          </div>
-        )}
+        {InfoMessage}
 
         <Button
           variant="outline"
           size="sm"
-          onClick={resetHeaderOrder}
+          onClick={handleResetOrder}
           className="text-xs"
           disabled={!hasResults}
         >

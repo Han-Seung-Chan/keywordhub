@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useMemo } from "react";
 import { KeywordData } from "@/types/table";
 import { useSharedKeywordState } from "@/store/useSharedKeywordState";
 
@@ -21,6 +21,9 @@ export function useKeywordResults() {
     resetAll();
     clearSearchKeyword();
   }, [resetAll, clearSearchKeyword]);
+
+  // 결과 존재 여부 계산을 메모이제이션
+  const hasResults = useMemo(() => tableData.length > 0, [tableData.length]);
 
   // 키워드 결과 데이터 처리 및 테이블 데이터 변환
   useEffect(() => {
@@ -60,9 +63,12 @@ export function useKeywordResults() {
         })
         .filter(Boolean) as KeywordData[]; // null 값 제거
 
-      setTableData(newResults);
+      // 메모이제이션을 위한 비교 로직 추가 - 기존 데이터와 실제로 다를 때만 업데이트
+      if (JSON.stringify(newResults) !== JSON.stringify(tableData)) {
+        setTableData(newResults);
+      }
     }
-  }, [keywordResults, setTableData]);
+  }, [keywordResults, setTableData, tableData]);
 
   return {
     searchResults: tableData,
@@ -71,6 +77,6 @@ export function useKeywordResults() {
     processedCount,
     totalKeywords: totalCount,
     handleClearResults,
-    hasResults: tableData.length > 0,
+    hasResults,
   };
 }

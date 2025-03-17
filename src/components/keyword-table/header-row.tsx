@@ -1,3 +1,4 @@
+import { memo, useCallback } from "react";
 import {
   Draggable,
   Droppable,
@@ -8,10 +9,23 @@ import { GripVertical } from "lucide-react";
 
 interface HeaderRowProps {
   headers: HeaderInfo[];
-  draggable?: boolean;
 }
 
-export function HeaderRow({ headers }: HeaderRowProps) {
+// memo로 컴포넌트 감싸기
+export const HeaderRow = memo(({ headers }: HeaderRowProps) => {
+  // 드래그 핸들 렌더링 함수 - 불필요한 리렌더링 방지
+  const renderDragHandle = useCallback((provided: any) => {
+    return (
+      <div
+        className="mr-1 cursor-grab rounded p-1 hover:bg-gray-200"
+        {...provided.dragHandleProps}
+        title="드래그하여 순서 변경"
+      >
+        <GripVertical className="h-4 w-4 text-gray-500" />
+      </div>
+    );
+  }, []);
+
   return (
     <TableHeader className="sticky top-0 z-20">
       <Droppable
@@ -28,12 +42,17 @@ export function HeaderRow({ headers }: HeaderRowProps) {
             {...provided.droppableProps}
           >
             {headers.map((header, index) => (
-              <Draggable key={header.id} draggableId={header.id} index={index}>
+              <Draggable
+                key={header.id}
+                draggableId={header.id}
+                index={index}
+                shouldRespectForcePress={true}
+              >
                 {(provided, snapshot) => (
                   <TableHead
                     ref={provided.innerRef}
                     {...provided.draggableProps}
-                    className="border border-gray-200 text-center transition-colors duration-200"
+                    className="border border-gray-200 px-1 text-center transition-colors duration-200"
                     style={{
                       ...provided.draggableProps.style,
                       backgroundColor: snapshot.isDragging
@@ -44,13 +63,7 @@ export function HeaderRow({ headers }: HeaderRowProps) {
                     }}
                   >
                     <div className="flex h-full items-center justify-center">
-                      <div
-                        className="mr-1 cursor-grab rounded p-1 hover:bg-gray-200"
-                        {...provided.dragHandleProps}
-                        title="드래그하여 순서 변경"
-                      >
-                        <GripVertical className="h-4 w-4 text-gray-500" />
-                      </div>
+                      {renderDragHandle(provided)}
                       {header.label}
                     </div>
                   </TableHead>
@@ -63,4 +76,7 @@ export function HeaderRow({ headers }: HeaderRowProps) {
       </Droppable>
     </TableHeader>
   );
-}
+});
+
+// displayName 설정
+HeaderRow.displayName = "HeaderRow";

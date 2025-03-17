@@ -1,84 +1,119 @@
+import { memo } from "react";
 import MonthlyRatioChart from "@/components/bar-chart";
 import { TableBody, TableCell, TableRow } from "@/components/ui/table";
-import { ColumnInfo, KeywordData } from "@/types/table";
+import { ColumnInfo, HeaderInfo, KeywordData } from "@/types/table";
 import { renderCellValue } from "@/utils/table-utils";
 
-interface DataRowsProps {
-  keywordData: KeywordData[];
+interface TableCellMemoProps {
+  item: KeywordData;
+  column: ColumnInfo;
+  isDragging: boolean;
+}
+const TableCellMemo = memo(
+  ({ item, column, isDragging }: TableCellMemoProps) => {
+    // 차트 렌더링 케이스
+    if (column.dataKey === "yearPcGraph" || column.dataKey === "yearMoGraph") {
+      return (
+        <TableCell
+          key={`${item.id}-${column.id}`}
+          className="bg-background border border-gray-200 p-0 text-center duration-200"
+          style={{
+            backgroundColor: isDragging
+              ? "rgba(209, 213, 219, 0.8)"
+              : undefined,
+          }}
+        >
+          <MonthlyRatioChart
+            renderData={
+              column.dataKey === "yearPcGraph"
+                ? item.pcYearData
+                : item.mobileYearData
+            }
+          />
+        </TableCell>
+      );
+    }
+
+    // 일반 셀 렌더링
+    return (
+      <TableCell
+        key={`${item.id}-${column.id}`}
+        className="bg-background border border-gray-200 text-center transition-colors duration-200"
+        style={{
+          backgroundColor: isDragging ? "rgba(209, 213, 219, 0.8)" : undefined,
+        }}
+      >
+        {renderCellValue(item, column.dataKey)}
+      </TableCell>
+    );
+  },
+);
+
+TableCellMemo.displayName = "TableCellMemo";
+
+interface TableRowMemoProps {
+  item: KeywordData;
   columns: ColumnInfo[];
   draggingHeaderId?: string | null;
 }
+const TableRowMemo = memo(
+  ({ item, columns, draggingHeaderId }: TableRowMemoProps) => {
+    return (
+      <TableRow key={item.id}>
+        {columns.map((column) => {
+          const isDragging = draggingHeaderId === column.id;
 
-export function DataRows({
-  keywordData,
-  columns,
-  draggingHeaderId,
-}: DataRowsProps) {
-  if (keywordData.length === 0) {
+          return (
+            <TableCellMemo
+              key={`${item.id}-${column.id}`}
+              item={item}
+              column={column}
+              isDragging={isDragging}
+            />
+          );
+        })}
+      </TableRow>
+    );
+  },
+);
+
+TableRowMemo.displayName = "TableRowMemo";
+
+interface DataRowsProps {
+  keywordData: KeywordData[];
+  columns: HeaderInfo[];
+  draggingHeaderId?: string | null;
+}
+export const DataRows = memo(
+  ({ keywordData, columns, draggingHeaderId }: DataRowsProps) => {
+    if (keywordData.length === 0) {
+      return (
+        <TableBody>
+          <TableRow>
+            <TableCell
+              colSpan={columns.length}
+              className="text-muted-foreground h-24 border border-gray-200 text-center"
+            >
+              키워드를 조회하세요.
+            </TableCell>
+          </TableRow>
+        </TableBody>
+      );
+    }
+
     return (
       <TableBody>
-        <TableRow>
-          <TableCell
-            colSpan={columns.length}
-            className="text-muted-foreground h-24 border border-gray-200 text-center"
-          >
-            키워드를 조회하세요.
-          </TableCell>
-        </TableRow>
+        {keywordData.map((item) => (
+          <TableRowMemo
+            key={item.id}
+            item={item}
+            columns={columns}
+            draggingHeaderId={draggingHeaderId}
+          />
+        ))}
       </TableBody>
     );
-  }
+  },
+);
 
-  return (
-    <TableBody>
-      {keywordData.map((item) => (
-        <TableRow key={item.id}>
-          {columns.map((column) => {
-            // 드래그 중인 헤더에 속한 데이터 셀인지 확인
-            const isDragging = draggingHeaderId === column.id;
-
-            if (
-              column.dataKey === "yearPcGraph" ||
-              column.dataKey === "yearMoGraph"
-            ) {
-              return (
-                <TableCell
-                  key={`${item.id}-${column.id}`}
-                  className="bg-background border border-gray-200 p-0 text-center duration-200"
-                  style={{
-                    backgroundColor: isDragging
-                      ? "rgba(209, 213, 219, 0.8)"
-                      : undefined,
-                  }}
-                >
-                  <MonthlyRatioChart
-                    renderData={
-                      column.dataKey === "yearPcGraph"
-                        ? item.pcYearData
-                        : item.mobileYearData
-                    }
-                  />
-                </TableCell>
-              );
-            }
-
-            return (
-              <TableCell
-                key={`${item.id}-${column.id}`}
-                className="bg-background border border-gray-200 text-center transition-colors duration-200"
-                style={{
-                  backgroundColor: isDragging
-                    ? "rgba(209, 213, 219, 0.8)"
-                    : undefined,
-                }}
-              >
-                {}
-                {renderCellValue(item, column.dataKey)}
-              </TableCell>
-            );
-          })}
-        </TableRow>
-      ))}
-    </TableBody>
-  );
-}
+DataRows.displayName = "DataRows";

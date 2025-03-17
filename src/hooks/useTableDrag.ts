@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { HeaderInfo } from "@/types/table";
 
 const LOCAL_STORAGE_KEY = "keyword-table-headers";
@@ -36,6 +36,11 @@ export function useTableDrag({ initialHeaders }: UseTableDragProps) {
       console.error("헤더 설정을 불러오는 중 오류가 발생했습니다:", error);
     }
   }, [initialHeaders]);
+
+  // 헤더 ID 메모이제이션
+  const headerIds = useMemo(() => {
+    return headers.map((header) => header.id);
+  }, [headers]);
 
   // 드래그 시작 핸들러
   const onDragStart = useCallback((start: any) => {
@@ -85,6 +90,7 @@ export function useTableDrag({ initialHeaders }: UseTableDragProps) {
 
   return {
     headers,
+    headerIds,
     draggingHeaderId,
     onDragStart,
     onDragEnd,

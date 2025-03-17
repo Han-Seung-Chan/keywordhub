@@ -12,7 +12,7 @@ export const formatValue = (value: any, dataKey?: string) => {
 export const renderCellValue = (item: KeywordData, dataKey?: string) => {
   // 데이터 키가 있고 아이템에 값이 있는 경우
   if (dataKey && item[dataKey] !== undefined) {
-    return formatValue(item[dataKey], dataKey);
+    return formatValue(item[dataKey]);
   }
 
   return "-";
