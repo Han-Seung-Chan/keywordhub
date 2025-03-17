@@ -1,7 +1,33 @@
+"use client";
+
+import { KeywordInputForm } from "@/components/common/keyword-input-form";
+import { PatternSelector } from "@/components/keyword-combiner/pattern-selector";
+import { ResultSection } from "@/components/keyword-combiner/result-section";
 import TabNavigation from "@/components/navigation/tab-navigation";
 import { Card, CardContent } from "@/components/ui/card";
+import { useKeywordCombiner } from "@/hooks/useKeywordCombiner";
 
 export default function KeywordCombinePage() {
+  const {
+    keywords,
+    selectedPatterns,
+    result,
+    addSpaceBetweenKeywords,
+    keywordCounts,
+    canCombine,
+    isProcessing,
+    handleKeyword1Change,
+    handleKeyword2Change,
+    handleKeyword3Change,
+    handleKeyword4Change,
+    handlePatternChange,
+    handleSelectAll,
+    resetResults,
+    setAddSpaceBetweenKeywords,
+    generateCombinations,
+    handleDownload,
+  } = useKeywordCombiner();
+
   return (
     <main className="min-h-screen">
       <div className="mt-6 flex flex-col gap-4">
@@ -15,21 +41,69 @@ export default function KeywordCombinePage() {
             {/* 탭 네비게이션 컴포넌트 */}
             <TabNavigation />
 
-            {/* 준비 중 메시지 */}
+            {/* 키워드 조합기 UI */}
             <Card className="mt-6 w-full border border-gray-200 shadow-sm">
-              <CardContent className="flex flex-col items-center justify-center p-12">
-                <div className="mb-6 rounded-full bg-blue-50 p-4">
-                  <div className="text-4xl">🔨</div>
-                </div>
-                <h2 className="mb-2 text-2xl font-bold text-gray-800">
-                  준비 중입니다
-                </h2>
-                <p className="mb-6 text-center text-gray-600">
-                  키워드 조합기 기능은 현재 개발 중이며 곧 서비스될 예정입니다.
-                  <br />더 나은 서비스로 찾아뵙겠습니다!
-                </p>
-                <div className="text-sm text-gray-500">
-                  예상 오픈일: 2025년 4월
+              <CardContent className="p-6">
+                <div className="flex flex-col gap-6 md:flex-row">
+                  {/* 키워드 입력 영역 */}
+                  <div className="combi_box flex flex-1 flex-col gap-4">
+                    <div className="keyword_box grid grid-cols-1 gap-4 sm:grid-cols-2">
+                      {/* 키워드 입력 컴포넌트들 */}
+                      <KeywordInputForm
+                        title="키워드1"
+                        value={keywords.keyword1}
+                        keywordCount={keywordCounts["1"]}
+                        onChange={handleKeyword1Change}
+                        disabled={isProcessing}
+                        maxKeywords={100}
+                      />
+                      <KeywordInputForm
+                        title="키워드2"
+                        value={keywords.keyword2}
+                        keywordCount={keywordCounts["2"]}
+                        onChange={handleKeyword2Change}
+                        disabled={isProcessing}
+                        maxKeywords={100}
+                      />
+                      <KeywordInputForm
+                        title="키워드3"
+                        value={keywords.keyword3}
+                        keywordCount={keywordCounts["3"]}
+                        onChange={handleKeyword3Change}
+                        disabled={isProcessing}
+                        maxKeywords={100}
+                      />
+                      <KeywordInputForm
+                        title="키워드4"
+                        value={keywords.keyword4}
+                        keywordCount={keywordCounts["4"]}
+                        onChange={handleKeyword4Change}
+                        disabled={isProcessing}
+                        maxKeywords={100}
+                      />
+                    </div>
+                  </div>
+
+                  {/* 조합 설정 및 결과 영역 */}
+                  <div className="keyword_setting flex-1">
+                    {/* 조합 패턴 선택 컴포넌트 */}
+                    <PatternSelector
+                      selectedPatterns={selectedPatterns}
+                      onPatternChange={handlePatternChange}
+                      onSelectAll={handleSelectAll}
+                    />
+
+                    {/* 결과 컴포넌트 */}
+                    <ResultSection
+                      result={result}
+                      addSpaceBetweenKeywords={addSpaceBetweenKeywords}
+                      canCombine={canCombine}
+                      onSpaceChange={setAddSpaceBetweenKeywords}
+                      onReset={resetResults}
+                      onGenerate={generateCombinations}
+                      onDownload={handleDownload}
+                    />
+                  </div>
                 </div>
               </CardContent>
             </Card>
