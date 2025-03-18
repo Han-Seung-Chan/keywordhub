@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useRef } from "react";
 import {
   KeywordState,
   KeywordArrays,
@@ -7,7 +7,7 @@ import {
 import { INITIAL_KEYWORDS, ALL_PATTERNS } from "@/constants/combiner";
 
 export const useKeywordCombiner = () => {
-  // 키워드 입력 상태
+  const keywordsRef = useRef<KeywordState>(INITIAL_KEYWORDS);
   const [keywords, setKeywords] = useState<KeywordState>(INITIAL_KEYWORDS);
 
   // 선택된 조합 패턴 상태
@@ -20,25 +20,60 @@ export const useKeywordCombiner = () => {
   const [addSpaceBetweenKeywords, setAddSpaceBetweenKeywords] =
     useState<boolean>(false);
 
-  // 처리 중 상태 (UI 비활성화를 위한 상태)
-  const [isProcessing, setIsProcessing] = useState<boolean>(false);
+  // 디바운스 타이머 ref
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // 디바운스 함수로 상태 업데이트 최적화
+  const updateKeywordsWithDebounce = useCallback(
+    (newKeywords: KeywordState) => {
+      // 내부 참조 즉시 업데이트
+      keywordsRef.current = newKeywords;
+
+      // 이전 타이머 취소
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+
+      // 500ms 디바운스로 상태 업데이트
+      debounceTimerRef.current = setTimeout(() => {
+        setKeywords(newKeywords);
+      }, 500);
+    },
+    [],
+  );
 
   // 키워드 변경 핸들러 - 각 키워드 그룹용 개별 핸들러 함수 생성
-  const handleKeyword1Change = useCallback((value: string) => {
-    setKeywords((prev) => ({ ...prev, keyword1: value }));
-  }, []);
+  const handleKeyword1Change = useCallback(
+    (value: string) => {
+      const newKeywords = { ...keywordsRef.current, keyword1: value };
+      updateKeywordsWithDebounce(newKeywords);
+    },
+    [updateKeywordsWithDebounce],
+  );
 
-  const handleKeyword2Change = useCallback((value: string) => {
-    setKeywords((prev) => ({ ...prev, keyword2: value }));
-  }, []);
+  const handleKeyword2Change = useCallback(
+    (value: string) => {
+      const newKeywords = { ...keywordsRef.current, keyword2: value };
+      updateKeywordsWithDebounce(newKeywords);
+    },
+    [updateKeywordsWithDebounce],
+  );
 
-  const handleKeyword3Change = useCallback((value: string) => {
-    setKeywords((prev) => ({ ...prev, keyword3: value }));
-  }, []);
+  const handleKeyword3Change = useCallback(
+    (value: string) => {
+      const newKeywords = { ...keywordsRef.current, keyword3: value };
+      updateKeywordsWithDebounce(newKeywords);
+    },
+    [updateKeywordsWithDebounce],
+  );
 
-  const handleKeyword4Change = useCallback((value: string) => {
-    setKeywords((prev) => ({ ...prev, keyword4: value }));
-  }, []);
+  const handleKeyword4Change = useCallback(
+    (value: string) => {
+      const newKeywords = { ...keywordsRef.current, keyword4: value };
+      updateKeywordsWithDebounce(newKeywords);
+    },
+    [updateKeywordsWithDebounce],
+  );
 
   // 체크박스 변경 핸들러
   const handlePatternChange = useCallback(
@@ -71,12 +106,20 @@ export const useKeywordCombiner = () => {
   // 각 키워드 그룹을 배열로 변환
   const keywordArrays = useMemo<KeywordArrays>(() => {
     return {
-      "1": keywords.keyword1.split("\n").filter((k) => k.trim() !== ""),
-      "2": keywords.keyword2.split("\n").filter((k) => k.trim() !== ""),
-      "3": keywords.keyword3.split("\n").filter((k) => k.trim() !== ""),
-      "4": keywords.keyword4.split("\n").filter((k) => k.trim() !== ""),
+      "1": keywordsRef.current.keyword1
+        .split("\n")
+        .filter((k) => k.trim() !== ""),
+      "2": keywordsRef.current.keyword2
+        .split("\n")
+        .filter((k) => k.trim() !== ""),
+      "3": keywordsRef.current.keyword3
+        .split("\n")
+        .filter((k) => k.trim() !== ""),
+      "4": keywordsRef.current.keyword4
+        .split("\n")
+        .filter((k) => k.trim() !== ""),
     };
-  }, [keywords]);
+  }, [keywordsRef.current]);
 
   // 키워드 개수 계산
   const keywordCounts = useMemo<KeywordCounts>(() => {
@@ -138,21 +181,6 @@ export const useKeywordCombiner = () => {
     setResult(uniqueCombinations.join("\n"));
   }, [selectedPatterns, keywordArrays, addSpaceBetweenKeywords]);
 
-  // 파일 다운로드 핸들러
-  const handleDownload = useCallback(() => {
-    if (!result) return;
-
-    const blob = new Blob([result], { type: "text/plain" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "keyword_combinations.txt";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-  }, [result]);
-
   // 조합 가능 여부 체크
   const canCombine = useMemo(() => {
     return (
@@ -160,6 +188,23 @@ export const useKeywordCombiner = () => {
       Object.values(keywordArrays).some((arr) => arr.length > 0)
     );
   }, [selectedPatterns, keywordArrays]);
+
+  // 엑셀 다운로드용 데이터 변환
+  const getExcelData = useCallback(() => {
+    if (!result) return [];
+
+    return result.split("\n").map((keyword, index) => ({
+      id: index + 1,
+      keyword,
+    }));
+  }, [result]);
+
+  const getExcelColumns = useCallback(() => {
+    return [
+      { key: "id", header: "번호", width: 50 },
+      { key: "keyword", header: "키워드", width: 200 },
+    ];
+  }, []);
 
   return {
     keywords,
@@ -169,7 +214,6 @@ export const useKeywordCombiner = () => {
     keywordArrays,
     keywordCounts,
     canCombine,
-    isProcessing,
     handleKeyword1Change,
     handleKeyword2Change,
     handleKeyword3Change,
@@ -178,8 +222,8 @@ export const useKeywordCombiner = () => {
     handleSelectAll,
     resetResults,
     setAddSpaceBetweenKeywords,
-    setIsProcessing,
     generateCombinations,
-    handleDownload,
+    getExcelData,
+    getExcelColumns,
   };
 };

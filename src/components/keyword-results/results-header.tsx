@@ -3,6 +3,7 @@ import ExcelDownloadButton from "@/components/excel-download";
 import { Button } from "@/components/ui/button";
 import { KeywordData } from "@/types/table";
 import { Trash2 } from "lucide-react";
+import { getKeywordExcelColumns } from "@/utils/excel-helpers";
 
 interface ResultsHeaderProps {
   onClearResults: () => void;
@@ -34,7 +35,13 @@ const ResultsHeader = memo(
             {ResultCountBadge}
           </h2>
           <div className="flex gap-2">
-            <ExcelDownloadButton data={data} />
+            <ExcelDownloadButton
+              data={data}
+              columns={getKeywordExcelColumns(data)}
+              filename="키워드_조회_결과"
+              sheetName="키워드조회"
+              disabled={!hasResults}
+            />
             <Button
               size="sm"
               variant="outline"

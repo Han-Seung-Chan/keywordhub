@@ -8,7 +8,7 @@ import {
   XAxis,
 } from "recharts";
 import { format, parse } from "date-fns";
-import { memo } from "react";
+import { memo, useMemo } from "react";
 
 import { ChartContainer, ChartTooltip } from "@/components/ui/chart";
 import { Card, CardContent } from "@/components/ui/card";
@@ -22,7 +22,7 @@ interface MonthlyRatioChartProps {
 // memo로 컴포넌트 감싸기
 const MonthlyRatioChart = memo(({ renderData }: MonthlyRatioChartProps) => {
   // 데이터가 없는 경우 빈 차트 렌더링
-  if (!renderData.results[0].data.length) {
+  if (!renderData?.results?.[0]?.data?.length) {
     return (
       <Card className="w-full rounded-none border-none bg-inherit py-1">
         <CardContent className="p-0">
@@ -34,14 +34,25 @@ const MonthlyRatioChart = memo(({ renderData }: MonthlyRatioChartProps) => {
     );
   }
 
-  // 데이터 포맷팅
-  const formattedData = renderData.results[0].data.map((item) => ({
-    ...item,
-    mainDisplayMonth: format(
-      parse(item.period, "yyyy-MM-dd", new Date()),
-      "yy-MM",
-    ),
-  }));
+  // 데이터 포맷팅 메모이제이션
+  const formattedData = useMemo(() => {
+    return renderData.results[0].data.map((item) => ({
+      ...item,
+      mainDisplayMonth: format(
+        parse(item.period, "yyyy-MM-dd", new Date()),
+        "yy-MM",
+      ),
+    }));
+  }, [renderData.results[0].data]);
+
+  // 차트 설정 메모이제이션
+  const chartConfig = useMemo(
+    () => ({
+      margin: { top: 0, right: 5, left: 5, bottom: 5 },
+      cursorStyle: { fill: "hsl(var(--muted))", opacity: 0.15 },
+    }),
+    [],
+  );
 
   return (
     <Card className="w-full rounded-none border-none bg-inherit py-1">
@@ -58,7 +69,7 @@ const MonthlyRatioChart = memo(({ renderData }: MonthlyRatioChartProps) => {
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={formattedData}
-              margin={{ top: 0, right: 5, left: 5, bottom: 5 }}
+              margin={chartConfig.margin}
               accessibilityLayer
             >
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
@@ -76,7 +87,7 @@ const MonthlyRatioChart = memo(({ renderData }: MonthlyRatioChartProps) => {
                 height={18}
               />
               <ChartTooltip
-                cursor={{ fill: "hsl(var(--muted))", opacity: 0.15 }}
+                cursor={chartConfig.cursorStyle}
                 content={({ active, payload }) => {
                   if (active && payload && payload.length) {
                     const item = payload[0].payload;
@@ -111,6 +122,7 @@ const MonthlyRatioChart = memo(({ renderData }: MonthlyRatioChartProps) => {
                 fill="var(--color-ratio, #3b82f6)"
                 radius={[3, 3, 0, 0]}
                 maxBarSize={20}
+                isAnimationActive={false}
               />
             </BarChart>
           </ResponsiveContainer>

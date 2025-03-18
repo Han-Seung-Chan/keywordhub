@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import { KeywordInputForm } from "@/components/common/keyword-input-form";
 import { PatternSelector } from "@/components/keyword-combiner/pattern-selector";
 import { ResultSection } from "@/components/keyword-combiner/result-section";
@@ -7,7 +8,7 @@ import TabNavigation from "@/components/navigation/tab-navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { useKeywordCombiner } from "@/hooks/useKeywordCombiner";
 
-export default function KeywordCombinePage() {
+const KeywordCombinePage = () => {
   const {
     keywords,
     selectedPatterns,
@@ -15,7 +16,6 @@ export default function KeywordCombinePage() {
     addSpaceBetweenKeywords,
     keywordCounts,
     canCombine,
-    isProcessing,
     handleKeyword1Change,
     handleKeyword2Change,
     handleKeyword3Change,
@@ -25,7 +25,8 @@ export default function KeywordCombinePage() {
     resetResults,
     setAddSpaceBetweenKeywords,
     generateCombinations,
-    handleDownload,
+    getExcelData,
+    getExcelColumns,
   } = useKeywordCombiner();
 
   return (
@@ -46,15 +47,15 @@ export default function KeywordCombinePage() {
               <CardContent className="p-6">
                 <div className="flex flex-col gap-6 md:flex-row">
                   {/* 키워드 입력 영역 */}
-                  <div className="combi_box flex flex-1 flex-col gap-4">
-                    <div className="keyword_box grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <div className="flex flex-1 flex-col gap-4">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                       {/* 키워드 입력 컴포넌트들 */}
                       <KeywordInputForm
                         title="키워드1"
                         value={keywords.keyword1}
                         keywordCount={keywordCounts["1"]}
                         onChange={handleKeyword1Change}
-                        disabled={isProcessing}
+                        disabled={false}
                         maxKeywords={100}
                       />
                       <KeywordInputForm
@@ -62,7 +63,7 @@ export default function KeywordCombinePage() {
                         value={keywords.keyword2}
                         keywordCount={keywordCounts["2"]}
                         onChange={handleKeyword2Change}
-                        disabled={isProcessing}
+                        disabled={false}
                         maxKeywords={100}
                       />
                       <KeywordInputForm
@@ -70,7 +71,7 @@ export default function KeywordCombinePage() {
                         value={keywords.keyword3}
                         keywordCount={keywordCounts["3"]}
                         onChange={handleKeyword3Change}
-                        disabled={isProcessing}
+                        disabled={false}
                         maxKeywords={100}
                       />
                       <KeywordInputForm
@@ -78,14 +79,14 @@ export default function KeywordCombinePage() {
                         value={keywords.keyword4}
                         keywordCount={keywordCounts["4"]}
                         onChange={handleKeyword4Change}
-                        disabled={isProcessing}
+                        disabled={false}
                         maxKeywords={100}
                       />
                     </div>
                   </div>
 
                   {/* 조합 설정 및 결과 영역 */}
-                  <div className="keyword_setting flex-1">
+                  <div className="flex-1">
                     {/* 조합 패턴 선택 컴포넌트 */}
                     <PatternSelector
                       selectedPatterns={selectedPatterns}
@@ -101,7 +102,8 @@ export default function KeywordCombinePage() {
                       onSpaceChange={setAddSpaceBetweenKeywords}
                       onReset={resetResults}
                       onGenerate={generateCombinations}
-                      onDownload={handleDownload}
+                      getExcelData={getExcelData}
+                      getExcelColumns={getExcelColumns}
                     />
                   </div>
                 </div>
@@ -112,4 +114,6 @@ export default function KeywordCombinePage() {
       </div>
     </main>
   );
-}
+};
+
+export default memo(KeywordCombinePage);
