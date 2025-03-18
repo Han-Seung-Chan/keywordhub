@@ -19,6 +19,8 @@ export const KeywordInputForm = memo(
     maxKeywords = 100,
     title,
   }: KeywordInputFormProps) => {
+    console.log(123);
+
     // 로컬 상태 추가 (제어 컴포넌트 유지하면서 불필요한 리렌더링 방지)
     const [localValue, setLocalValue] = useState(value);
     const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);

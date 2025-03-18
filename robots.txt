@@ -1,0 +1,16 @@
+# robots.txt 파일
+# 모든 검색 엔진에 허용
+User-agent: *
+Allow: /
+
+# 사이트맵 위치
+Sitemap: https://www.keywordhub.com/sitemap.xml
+
+# 중요하지 않은 페이지 크롤링 방지
+Disallow: /api/
+Disallow: /_next/
+Disallow: /static/
+
+# 이미지 크롤링 허용
+User-agent: Googlebot-Image
+Allow: /images/

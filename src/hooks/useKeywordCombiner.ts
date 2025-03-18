@@ -34,10 +34,10 @@ export const useKeywordCombiner = () => {
         clearTimeout(debounceTimerRef.current);
       }
 
-      // 500ms 디바운스로 상태 업데이트
+      // 300ms 디바운스로 상태 업데이트
       debounceTimerRef.current = setTimeout(() => {
         setKeywords(newKeywords);
-      }, 500);
+      }, 300);
     },
     [],
   );

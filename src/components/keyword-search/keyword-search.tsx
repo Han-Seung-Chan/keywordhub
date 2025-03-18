@@ -3,8 +3,7 @@
 import { useCallback } from "react";
 import { useKeywordSearch } from "@/hooks/useKeywordSearch";
 import ActionButtons from "@/components/keyword-search/action-buttons";
-import { ErrorMessage } from "@/components/common";
-import { KeywordInputForm } from "@/components/common/keyword-input-form";
+import { ErrorMessage, KeywordInputForm } from "@/components/common";
 
 export default function KeywordSearch() {
   const {
