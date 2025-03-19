@@ -17,7 +17,7 @@ export const HeaderRow = memo(({ headers }: HeaderRowProps) => {
   const renderDragHandle = useCallback((provided: any) => {
     return (
       <div
-        className="mr-1 cursor-grab rounded p-1 hover:bg-gray-200"
+        className="mr-1 cursor-grab rounded hover:bg-gray-200"
         {...provided.dragHandleProps}
         title="드래그하여 순서 변경"
       >

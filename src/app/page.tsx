@@ -22,7 +22,6 @@ export default function MainPage() {
     <section className="min-h-screen">
       <div className="mt-6 flex flex-col gap-4">
         <div className="w-full">
-          {/* 페이지 제목 영역 - 시맨틱 태그 적용 */}
           <header className="mb-6">
             <h1 className="text-navy mb-2 text-2xl font-bold">
               키워드 검색량 조회기

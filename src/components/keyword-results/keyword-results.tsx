@@ -59,7 +59,7 @@ LoadingState.displayName = "LoadingState";
 // 결과 컨텐츠 컴포넌트
 const ResultsContent = memo(({ searchResults }: { searchResults: any[] }) => {
   return (
-    <CardContent className="p-6">
+    <CardContent className="py-3">
       <KeywordTable keywordData={searchResults} />
     </CardContent>
   );
@@ -106,7 +106,7 @@ export default function KeywordResults() {
   ]);
 
   return (
-    <Card className="mt-6 w-full gap-0 border border-gray-200 shadow-sm">
+    <Card className="mt-6 w-full gap-0 border border-gray-200 py-3 shadow-sm">
       <ResultsHeader
         onClearResults={handleClearResults}
         data={searchResults}
