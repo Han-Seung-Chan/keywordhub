@@ -36,20 +36,6 @@ export default function RelatedKeywordsPage() {
             <TabNavigation />
           </nav>
 
-          {/* <section className="mt-6" aria-labelledby="search-section">
-            <h2 id="search-section" className="sr-only">
-              키워드 검색
-            </h2>
-            <KeywordSearch />
-          </section>
-
-          <section aria-labelledby="results-section">
-            <h2 id="results-section" className="sr-only">
-              키워드 검색 결과
-            </h2>
-            <KeywordResults />
-          </section> */}
-
           <Card className="mt-6 w-full border border-gray-200 shadow-sm">
             <CardContent className="p-6">
               <RelatedKeywords />

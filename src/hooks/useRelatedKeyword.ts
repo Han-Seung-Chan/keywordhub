@@ -1,3 +1,5 @@
+"use client";
+
 import { useCallback, useRef, useState, useMemo } from "react";
 import { fetchKeywordData } from "@/lib/fetch-keywords";
 import {
@@ -5,16 +7,10 @@ import {
   validateKeywordInput,
 } from "@/utils/keyword-validation";
 import { KeywordResponse } from "@/types/keyword-tool";
+import { RelatedKeywordResult } from "@/types/related-keyword";
 
 // 최대 허용 키워드 개수
-const MAX_KEYWORDS = 100;
-
-interface RelatedKeywordResult {
-  keywordData: KeywordResponse;
-  relatedKeywords: KeywordResponse[];
-  isLoading: boolean;
-  error: string | null;
-}
+const MAX_KEYWORDS = 10;
 
 export function useRelatedKeyword() {
   // 상태 관리
@@ -40,7 +36,7 @@ export function useRelatedKeyword() {
   // 유효성 검사 - 옵션 객체 메모이제이션
   const validationStatus = useMemo(
     () => validateKeywordInput(searchKeyword, MAX_KEYWORDS),
-    [searchKeyword, MAX_KEYWORDS],
+    [searchKeyword],
   );
 
   // 검색 유효성 검사
@@ -69,7 +65,6 @@ export function useRelatedKeyword() {
     try {
       // 개별 키워드에 대해 API 호출
       const result = await fetchKeywordData(currentKeyword);
-      console.log(result);
 
       // 결과 처리
       if (result.success && result.data.length) {
@@ -242,6 +237,14 @@ export function useRelatedKeyword() {
     return Array.from(allKeywords);
   }, [results]);
 
+  // 검색키워드 목록 생성
+  const searchKeywords = useMemo(() => {
+    return searchKeyword
+      .split("\n")
+      .map((kw) => kw.trim())
+      .filter((kw) => kw !== "");
+  }, [searchKeyword]);
+
   return {
     searchKeyword,
     setSearchKeyword,
@@ -257,5 +260,6 @@ export function useRelatedKeyword() {
     handleClear,
     handleStop,
     maxKeywords: MAX_KEYWORDS,
+    searchKeywords,
   };
 }

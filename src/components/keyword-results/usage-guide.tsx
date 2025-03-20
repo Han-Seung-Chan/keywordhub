@@ -1,6 +1,10 @@
 import { Info, Download, SortDesc } from "lucide-react";
 
-export default function UsageGuide() {
+interface UsageGuideProps {
+  maxKeywordCnt: number;
+}
+
+export default function UsageGuide({ maxKeywordCnt }: UsageGuideProps) {
   return (
     <div className="border-t border-gray-200 bg-gray-50 p-6">
       <div className="flex items-center">
@@ -16,7 +20,7 @@ export default function UsageGuide() {
           </div>
           <ul className="ml-7 list-disc space-y-1 text-sm text-gray-600">
             <li>키워드를 한 줄에 하나씩 입력</li>
-            <li>최대 100개까지 한 번에 검색 가능</li>
+            <li>최대 {maxKeywordCnt}개까지 한 번에 검색 가능</li>
             <li>특수문자는 사용할 수 없음</li>
             <li>유효하지 않은 키워드는 결과에서 제외</li>
           </ul>
@@ -29,9 +33,12 @@ export default function UsageGuide() {
           </div>
           <ul className="ml-7 list-disc space-y-1 text-sm text-gray-600">
             <li>조회 결과는 엑셀 파일로 다운로드 가능</li>
-            <li>원하는 키워드만 선택하여 다운로드 가능</li>
             <li>PC/모바일 검색량 및 클릭률 확인 가능</li>
-            <li>최근 12개월 검색 추이 데이터 제공</li>
+            {maxKeywordCnt === 100 ? (
+              <li>최근 12개월 검색 추이 데이터 제공</li>
+            ) : (
+              <></>
+            )}
           </ul>
         </div>
 
@@ -41,9 +48,7 @@ export default function UsageGuide() {
             <h4 className="font-semibold">테이블 기능</h4>
           </div>
           <ul className="ml-7 list-disc space-y-1 text-sm text-gray-600">
-            <li>키워드 및 조회수에 따라 정렬 가능</li>
             <li>열 제목을 드래그하여 순서 변경 가능</li>
-            <li>키워드 클릭시 상세 정보 확인 가능</li>
             <li>초기화 버튼으로 기본 설정 복원</li>
           </ul>
         </div>

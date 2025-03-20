@@ -1,8 +1,6 @@
 import { memo, useMemo } from "react";
-import MonthlyRatioChart from "@/components/bar-chart";
 import { TableBody, TableCell, TableRow } from "@/components/ui/table";
-import { ColumnInfo, HeaderInfo, KeywordData } from "@/types/table";
-import { renderCellValue } from "@/utils/table-utils";
+import { ColumnInfo, HeaderInfo } from "@/types/table";
 
 // 차트 셀 컴포넌트 - 독립적 메모이제이션
 const ChartCell = memo(
@@ -12,11 +10,36 @@ const ChartCell = memo(
     dataKey,
     isDragging,
   }: {
-    item: KeywordData;
+    item: any;
     columnId: string;
     dataKey: string;
     isDragging: boolean;
   }) => {
+    // 연관 키워드 컴포넌트는 차트 데이터가 없기 때문에 차트 사용이 필요할 때만 임포트
+    const MonthlyRatioChart = useMemo(() => {
+      if (dataKey === "yearPcGraph" || dataKey === "yearMoGraph") {
+        return require("@/components/bar-chart").default;
+      }
+      return null;
+    }, [dataKey]);
+
+    // 차트 컴포넌트가 없거나 연관 키워드 데이터에는 차트 데이터가 없는 경우 처리
+    if (!MonthlyRatioChart || !item.pcYearData) {
+      return (
+        <TableCell
+          key={`${item.id}-${columnId}`}
+          className="bg-background border border-gray-200 p-0 text-center duration-200"
+          style={{
+            backgroundColor: isDragging
+              ? "rgba(209, 213, 219, 0.8)"
+              : undefined,
+          }}
+        >
+          -
+        </TableCell>
+      );
+    }
+
     const chartData = useMemo(() => {
       return dataKey === "yearPcGraph" ? item.pcYearData : item.mobileYearData;
     }, [item, dataKey]);
@@ -44,7 +67,7 @@ const DataCell = memo(
     column,
     isDragging,
   }: {
-    item: KeywordData;
+    item: any;
     column: ColumnInfo;
     isDragging: boolean;
   }) => {
@@ -68,8 +91,38 @@ const DataCell = memo(
 
 DataCell.displayName = "DataCell";
 
+// 셀 값 렌더링을 위한 범용 함수
+const renderCellValue = (item: any, dataKey?: string) => {
+  // 데이터 키가 있고 아이템에 값이 있는 경우
+  if (dataKey && item[dataKey] !== undefined) {
+    // 숫자 포맷팅
+    if (typeof item[dataKey] === "number") {
+      return item[dataKey].toLocaleString();
+    }
+    return item[dataKey];
+  }
+
+  // 관계형 데이터 처리 (예: 중첩된 객체)
+  if (dataKey && dataKey.includes(".")) {
+    const parts = dataKey.split(".");
+    let value = item;
+    for (const part of parts) {
+      if (value === undefined || value === null) return "-";
+      value = value[part];
+    }
+
+    if (typeof value === "number") {
+      return value.toLocaleString();
+    }
+
+    return value || "-";
+  }
+
+  return "-";
+};
+
 interface TableCellMemoProps {
-  item: KeywordData;
+  item: any;
   column: ColumnInfo;
   isDragging: boolean;
 }
@@ -96,7 +149,7 @@ const TableCellMemo = memo(
 TableCellMemo.displayName = "TableCellMemo";
 
 interface TableRowMemoProps {
-  item: KeywordData;
+  item: any;
   columns: ColumnInfo[];
   draggingHeaderId?: string | null;
 }
@@ -128,13 +181,19 @@ const TableRowMemo = memo(
 TableRowMemo.displayName = "TableRowMemo";
 
 interface DataRowsProps {
-  keywordData: KeywordData[];
+  keywordData: any[];
   columns: HeaderInfo[];
   draggingHeaderId?: string | null;
+  emptyMessage?: string;
 }
 
 export const DataRows = memo(
-  ({ keywordData, columns, draggingHeaderId }: DataRowsProps) => {
+  ({
+    keywordData,
+    columns,
+    draggingHeaderId,
+    emptyMessage = "키워드를 조회하세요.",
+  }: DataRowsProps) => {
     const emptyContent = useMemo(() => {
       if (keywordData.length === 0) {
         return (
@@ -144,14 +203,14 @@ export const DataRows = memo(
                 colSpan={columns.length}
                 className="text-muted-foreground h-24 border border-gray-200 text-center"
               >
-                키워드를 조회하세요.
+                {emptyMessage}
               </TableCell>
             </TableRow>
           </TableBody>
         );
       }
       return null;
-    }, [keywordData.length, columns.length]);
+    }, [keywordData.length, columns.length, emptyMessage]);
 
     if (keywordData.length === 0) {
       return emptyContent;
