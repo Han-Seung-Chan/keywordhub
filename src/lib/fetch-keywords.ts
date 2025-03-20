@@ -8,7 +8,7 @@ import { KeywordResponse } from "@/types/keyword-tool";
  */
 export async function fetchKeywordData(
   keyword: string,
-): Promise<ApiResult<KeywordResponse>> {
+): Promise<ApiResult<KeywordResponse[]>> {
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000); // 10초 타임아웃
@@ -63,7 +63,7 @@ export async function fetchKeywordData(
 
     return {
       success: true,
-      data: responseData.keywordList[0],
+      data: responseData.keywordList,
       error: null,
     };
   } catch (error) {

@@ -4,7 +4,7 @@ import { memo } from "react";
 import { useKeywordCombiner } from "@/hooks/useKeywordCombiner";
 import { PatternSelector } from "@/components/keyword-combiner/pattern-selector";
 import { ResultSection } from "@/components/keyword-combiner/result-section";
-import { KeywordInputForm } from "@/components/common";
+import { ErrorMessage, KeywordInputForm } from "@/components/common";
 
 const KeywordCombiner = () => {
   const {
@@ -14,6 +14,7 @@ const KeywordCombiner = () => {
     addSpaceBetweenKeywords,
     keywordCounts,
     canCombine,
+    error,
     handleKeyword1Change,
     handleKeyword2Change,
     handleKeyword3Change,
@@ -72,6 +73,7 @@ const KeywordCombiner = () => {
             maxKeywords={100}
           />
         </div>
+        <ErrorMessage message={error} />
       </section>
 
       {/* 조합 설정 및 결과 영역 */}
