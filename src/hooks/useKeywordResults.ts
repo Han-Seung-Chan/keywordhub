@@ -49,6 +49,7 @@ export function useKeywordResults() {
           return {
             id: index + 1,
             keyword: keyword,
+            totalCnt: data.monthlyPcQcCnt + data.monthlyMobileQcCnt || 0,
             monthlyPcQcCnt: data.monthlyPcQcCnt || 0,
             monthlyAvePcClkCnt: data.monthlyAvePcClkCnt || 0,
             monthlyAvePcCtr: data.monthlyAvePcCtr || 0,

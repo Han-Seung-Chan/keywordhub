@@ -87,6 +87,7 @@ export function formatRelatedKeywordTableData(
       rows.push({
         id: rowIndex++,
         searchKeyword: searchKw,
+        totalCnt: keyword.monthlyPcQcCnt + keyword.monthlyMobileQcCnt,
         ...keyword,
         // 만약 연관 키워드가 검색 키워드와 동일하면 표시를 다르게 함
         relKeyword:
@@ -115,18 +116,20 @@ export function formatRelatedKeywordExcelData(
   results.forEach((result, resultIndex) => {
     const searchKw = searchKeywords[resultIndex] || "";
 
-    result.relatedKeywords.forEach((keyword: KeywordResponse) => {
+    result.relatedKeywords.forEach((keyword: KeywordResponse, index) => {
       rows.push({
-        검색키워드: searchKw,
-        연관키워드: keyword.relKeyword === searchKw ? "-" : keyword.relKeyword,
-        월간PC검색량: keyword.monthlyPcQcCnt || 0,
-        월간PC클릭수: keyword.monthlyAvePcClkCnt || 0,
-        월간PCCTR: keyword.monthlyAvePcCtr,
-        월간모바일검색량: keyword.monthlyMobileQcCnt || 0,
-        월간모바일클릭수: keyword.monthlyAveMobileClkCnt || 0,
-        월간모바일CTR: keyword.monthlyAveMobileCtr,
-        입찰단가지수: keyword.compIdx || "-",
-        월간노출광고수: keyword.plAvgDepth || 0,
+        id: index + 1,
+        keyword: searchKw,
+        relKeyword: keyword.relKeyword === searchKw ? "-" : keyword.relKeyword,
+        totalCnt: keyword.monthlyPcQcCnt + keyword.monthlyMobileQcCnt || 0,
+        monthlyPcQcCnt: keyword.monthlyPcQcCnt || 0,
+        monthlyAvePcClkCnt: keyword.monthlyAvePcClkCnt || 0,
+        monthlyAvePcCtr: keyword.monthlyAvePcCtr,
+        monthlyMobileQcCnt: keyword.monthlyMobileQcCnt || 0,
+        monthlyAveMobileClkCnt: keyword.monthlyAveMobileClkCnt || 0,
+        monthlyAveMobileCtr: keyword.monthlyAveMobileCtr,
+        compIdx: keyword.compIdx || "-",
+        plAvgDepth: keyword.plAvgDepth || 0,
       });
     });
   });

@@ -12,6 +12,11 @@ export const defaultHeader: HeaderInfo[] = [
     dataKey: "keyword",
   },
   {
+    id: "totalCnt",
+    label: "총 검색량",
+    dataKey: "totalCnt",
+  },
+  {
     id: "yearPcGraph",
     label: "PC 1년 검색 추이",
     dataKey: "yearPcGraph",
@@ -73,6 +78,11 @@ export const relatedKeywordsHeader: HeaderInfo[] = [
     id: "searchKeyword",
     label: "검색 키워드",
     dataKey: "searchKeyword",
+  },
+  {
+    id: "totalCnt",
+    label: "총 검색량",
+    dataKey: "totalCnt",
   },
   {
     id: "relKeyword",

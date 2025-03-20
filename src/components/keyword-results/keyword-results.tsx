@@ -10,15 +10,18 @@ import {
 import { useKeywordResults } from "@/hooks/useKeywordResults";
 import { Card, CardContent } from "@/components/ui/card";
 import LoadingProgress from "@/components/loading-progress";
+import { KeywordData } from "@/types/table";
 
 // 결과 컨텐츠 컴포넌트
-const ResultsContent = memo(({ searchResults }: { searchResults: any[] }) => {
-  return (
-    <CardContent className="py-3">
-      <KeywordTable keywordData={searchResults} />
-    </CardContent>
-  );
-});
+const ResultsContent = memo(
+  ({ searchResults }: { searchResults: KeywordData[] }) => {
+    return (
+      <CardContent className="py-3">
+        <KeywordTable keywordData={searchResults} />
+      </CardContent>
+    );
+  },
+);
 
 ResultsContent.displayName = "ResultsContent";
 
