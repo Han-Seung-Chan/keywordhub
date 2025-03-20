@@ -7,6 +7,10 @@ import {
 import { fetchBatchKeywordData } from "@/lib/fetch-keywords";
 import { fetchDatalabDataBatch } from "@/lib/fetch-data-lab";
 import { DataLabRequest } from "@/types/data-lab";
+import {
+  countKeywords,
+  validateKeywordInput,
+} from "@/utils/keyword-validation";
 
 // 배치 크기 정의: 한 번에 처리할 키워드 수
 const KEYWORD_BATCH_SIZE = 15;
@@ -40,44 +44,16 @@ export function useKeywordSearch() {
   const batchResultsRef = useRef<Map<string, KeywordSearchResult>>(new Map());
 
   // 키워드 개수 계산 메모이제이션
-  const keywordCount = useMemo(() => {
-    if (!searchKeyword) return 0;
-    return searchKeyword.split("\n").filter((kw) => kw.trim() !== "").length;
-  }, [searchKeyword]);
+  const keywordCount = useMemo(
+    () => countKeywords(searchKeyword),
+    [searchKeyword],
+  );
 
-  // 특수문자 검사 함수 메모이제이션
-  const hasSpecialCharacters = useMemo(() => {
-    return /[^a-zA-Z0-9가-힣\s]/.test(searchKeyword);
-  }, [searchKeyword]);
-
-  // 유효성 검사 - 옵션 객체 메모이제이션
-  const validationStatus = useMemo(() => {
-    const trimmedKeyword = searchKeyword.trim();
-
-    if (!trimmedKeyword) {
-      return { isValid: false, errorMessage: "검색할 키워드를 입력해주세요." };
-    }
-
-    if (hasSpecialCharacters) {
-      return {
-        isValid: false,
-        errorMessage: "검색어에 특수문자를 사용할 수 없습니다.",
-      };
-    }
-
-    if (keywordCount > MAX_KEYWORDS) {
-      return {
-        isValid: false,
-        errorMessage: `최대 ${MAX_KEYWORDS}개의 키워드만 검색할 수 있습니다.`,
-      };
-    }
-
-    if (keywordCount === 0) {
-      return { isValid: false, errorMessage: "검색할 키워드를 입력해주세요." };
-    }
-
-    return { isValid: true, errorMessage: null };
-  }, [searchKeyword, keywordCount, hasSpecialCharacters]);
+  // 유효성 검사
+  const validationStatus = useMemo(
+    () => validateKeywordInput(searchKeyword, MAX_KEYWORDS),
+    [searchKeyword, MAX_KEYWORDS],
+  );
 
   // 검색 유효성 검사
   const validateSearch = useCallback((): boolean => {
