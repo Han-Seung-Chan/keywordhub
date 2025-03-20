@@ -39,7 +39,7 @@ export default function TabNavigation() {
         aria-selected={isActive("/related-keywords")}
         aria-controls="related-keywords-panel"
       >
-        연관키워드 (준비중)
+        연관키워드
       </Link>
     </div>
   );
