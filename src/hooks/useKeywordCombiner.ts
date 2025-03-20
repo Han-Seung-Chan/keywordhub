@@ -5,10 +5,15 @@ import {
   KeywordCounts,
 } from "../types/keyword-combiner";
 import { INITIAL_KEYWORDS, ALL_PATTERNS } from "@/constants/combiner";
+import { validateKeywordInput } from "@/utils/keyword-validation";
+
+// 최대 허용 키워드 개수
+const MAX_KEYWORDS = 100;
 
 export const useKeywordCombiner = () => {
   const keywordsRef = useRef<KeywordState>(INITIAL_KEYWORDS);
   const [keywords, setKeywords] = useState<KeywordState>(INITIAL_KEYWORDS);
+  const [error, setError] = useState<string>("");
 
   // 선택된 조합 패턴 상태
   const [selectedPatterns, setSelectedPatterns] = useState<string[]>([]);
@@ -22,6 +27,55 @@ export const useKeywordCombiner = () => {
 
   // 디바운스 타이머 ref
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // 유효성 검사
+  const validationStatus = useMemo(() => {
+    const validateKeyword1 = validateKeywordInput(
+      keywordsRef.current.keyword1,
+      MAX_KEYWORDS,
+      true,
+    );
+    if (!validateKeyword1.isValid) return validateKeyword1;
+
+    const validateKeyword2 = validateKeywordInput(
+      keywordsRef.current.keyword2,
+      MAX_KEYWORDS,
+      true,
+    );
+    if (!validateKeyword2.isValid) return validateKeyword2;
+
+    const validateKeyword3 = validateKeywordInput(
+      keywordsRef.current.keyword3,
+      MAX_KEYWORDS,
+      true,
+    );
+    if (!validateKeyword3.isValid) return validateKeyword3;
+
+    const validateKeyword4 = validateKeywordInput(
+      keywordsRef.current.keyword4,
+      MAX_KEYWORDS,
+      true,
+    );
+    if (!validateKeyword4.isValid) return validateKeyword4;
+
+    return { isValid: true, errorMessage: null };
+  }, [
+    keywordsRef.current.keyword1,
+    keywordsRef.current.keyword2,
+    keywordsRef.current.keyword3,
+    keywordsRef.current.keyword4,
+    MAX_KEYWORDS,
+  ]);
+
+  // 검색 유효성 검사
+  const validateSearch = useCallback((): boolean => {
+    if (!validationStatus.isValid) {
+      setError(validationStatus.errorMessage);
+      return false;
+    }
+    setError("");
+    return true;
+  }, [validationStatus, setError]);
 
   // 디바운스 함수로 상태 업데이트 최적화
   const updateKeywordsWithDebounce = useCallback(
@@ -133,6 +187,9 @@ export const useKeywordCombiner = () => {
 
   // 조합 결과 생성
   const generateCombinations = useCallback(() => {
+    // 유효성 검사
+    if (!validateSearch()) return;
+
     const combinations: string[] = [];
 
     selectedPatterns.forEach((pattern) => {
@@ -183,9 +240,16 @@ export const useKeywordCombiner = () => {
 
   // 조합 가능 여부 체크
   const canCombine = useMemo(() => {
+    const hasDataInMultipleArrays2 =
+      Object.values(keywordArrays).filter((subArr) => subArr.length > 0)
+        .length >= 2;
+    console.log(hasDataInMultipleArrays2);
+
     return (
       selectedPatterns.length > 0 &&
-      Object.values(keywordArrays).some((arr) => arr.length > 0)
+      Object.values(keywordArrays).some((arr) => arr.length > 0) &&
+      Object.values(keywordArrays).filter((subArr) => subArr.length > 0)
+        .length >= 2
     );
   }, [selectedPatterns, keywordArrays]);
 
@@ -214,6 +278,7 @@ export const useKeywordCombiner = () => {
     keywordArrays,
     keywordCounts,
     canCombine,
+    error,
     handleKeyword1Change,
     handleKeyword2Change,
     handleKeyword3Change,
