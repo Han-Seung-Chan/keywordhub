@@ -2,6 +2,13 @@
 const nextConfig = {
   reactStrictMode: false,
   output: "standalone",
+
+  serverExternalPackages: ["@google/generative-ai"],
+
+  experimental: {
+    largePageDataBytes: 10 * 1024 * 1024, // 10MB로 설정 (bodyParser.sizeLimit과 유사한 역할)
+  },
+
   images: {
     remotePatterns: [
       {
@@ -19,6 +26,7 @@ const nextConfig = {
     ],
     formats: ["image/avif", "image/webp"],
   },
+
   webpack: (config) => {
     const fileLoaderRule = config.module.rules.find((rule) =>
       rule.test?.test?.(".svg"),
@@ -41,14 +49,6 @@ const nextConfig = {
     fileLoaderRule.exclude = /\.svg$/i;
 
     return config;
-  },
-  experimental: {
-    serverComponentsExternalPackages: ["@google/generative-ai"],
-  },
-  api: {
-    bodyParser: {
-      sizeLimit: "10mb", // 이미지 요청을 위한 제한 크기 증가
-    },
   },
 };
 
