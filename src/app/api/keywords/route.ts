@@ -1,14 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
+
 import {
   ApiKeywordToolConfig,
   KeywordServerResponse,
 } from "@/types/keyword-tool";
 import {
-  getTimestamp,
   generateSignature,
-  validateEnvVariables,
-  parseApiResponse,
+  getTimestamp,
   handleApiError,
+  parseApiResponse,
+  validateEnvVariables,
 } from "@/utils/naver-api";
 
 /**

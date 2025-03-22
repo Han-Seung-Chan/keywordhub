@@ -1,7 +1,8 @@
 import { memo, useMemo } from "react";
+import { lazy } from "react";
+
 import { TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { ColumnInfo, HeaderInfo, KeywordData } from "@/types/table";
-import { lazy } from "react";
 
 // 차트 컴포넌트를 lazy 로딩으로 변경
 const MonthlyRatioChart = lazy(() => import("@/components/bar-chart"));

@@ -1,9 +1,10 @@
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
 import { RefreshCw } from "lucide-react";
-import ExcelDownloadButton from "@/components/excel-download";
 import { memo, useMemo } from "react";
+
+import ExcelDownloadButton from "@/components/excel-download";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Textarea } from "@/components/ui/textarea";
 import { ExcelColumn } from "@/types/excel";
 
 interface ResultSectionProps {

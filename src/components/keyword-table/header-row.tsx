@@ -1,12 +1,13 @@
+import { GripVertical } from "lucide-react";
 import { memo, useCallback } from "react";
+import type { DraggableProvided } from "react-beautiful-dnd"; // 타입 import 추가
+
 import {
   Draggable,
   Droppable,
 } from "@/components/keyword-table/drag-components";
 import { TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { HeaderInfo } from "@/types/table";
-import { GripVertical } from "lucide-react";
-import type { DraggableProvided } from "react-beautiful-dnd"; // 타입 import 추가
 
 interface HeaderRowProps {
   headers: HeaderInfo[];

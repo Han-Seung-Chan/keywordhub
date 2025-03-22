@@ -1,8 +1,9 @@
+import { Trash2 } from "lucide-react";
 import { memo, useMemo } from "react";
+
 import ExcelDownloadButton from "@/components/excel-download";
 import { Button } from "@/components/ui/button";
 import { KeywordData } from "@/types/table";
-import { Trash2 } from "lucide-react";
 import { getKeywordExcelColumns } from "@/utils/excel-helpers";
 
 interface ResultsHeaderProps {

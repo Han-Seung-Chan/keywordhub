@@ -1,4 +1,4 @@
-import { Info, Download, SortDesc } from "lucide-react";
+import { Download, Info, SortDesc } from "lucide-react";
 
 interface UsageGuideProps {
   maxKeywordCnt: number;

@@ -2,12 +2,12 @@
 
 import {
   AlertDialog,
+  AlertDialogAction,
   AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogTitle,
   AlertDialogDescription,
   AlertDialogFooter,
-  AlertDialogAction,
+  AlertDialogHeader,
+  AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
 interface FeatureAlertProps {

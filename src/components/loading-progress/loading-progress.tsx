@@ -1,7 +1,8 @@
 "use client";
-import { Loading } from "@/components/common";
 import { Loader2 } from "lucide-react";
 import { memo, useMemo } from "react";
+
+import { Loading } from "@/components/common";
 
 const LoadingProgress = memo(
   ({

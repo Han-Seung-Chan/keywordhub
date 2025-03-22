@@ -1,6 +1,6 @@
 // src/app/not-found.tsx
-import Link from "next/link";
 import { Metadata } from "next";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "페이지를 찾을 수 없음 - 키워드 허브",

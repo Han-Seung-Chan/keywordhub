@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
+
 import { DataLabRequest } from "@/types/data-lab";
-import { validateEnvVariables, handleApiError } from "@/utils/naver-api";
+import { handleApiError,validateEnvVariables } from "@/utils/naver-api";
 
 /**
  * 환경 변수에서 네이버 오픈 API 설정을 가져옵니다

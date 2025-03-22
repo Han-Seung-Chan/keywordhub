@@ -1,17 +1,17 @@
 "use client";
 
-import { useRelatedKeyword } from "@/hooks/useRelatedKeyword";
-import { Card, CardContent } from "@/components/ui/card";
-
 import { useMemo } from "react";
+
 import { UsageGuide } from "@/components/keyword-results";
+import LoadingProgress from "@/components/loading-progress";
+import { KeywordInputSection } from "@/components/related-keywords/related-keywords-input-section";
+import { ResultsSection } from "@/components/related-keywords/related-keywords-result-section";
+import { Card, CardContent } from "@/components/ui/card";
+import { useRelatedKeyword } from "@/hooks/useRelatedKeyword";
 import {
   formatRelatedKeywordExcelData,
   formatRelatedKeywordTableData,
 } from "@/utils/excel-helpers";
-import { KeywordInputSection } from "@/components/related-keywords/related-keywords-input-section";
-import LoadingProgress from "@/components/loading-progress";
-import { ResultsSection } from "@/components/related-keywords/related-keywords-result-section";
 
 export default function RelatedKeywords() {
   const {

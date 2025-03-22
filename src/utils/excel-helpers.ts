@@ -1,8 +1,8 @@
+import { keywordColumns } from "@/constants/default-excel-data";
+import { DataLabResponse } from "@/types/data-lab";
+import { ExcelColumn } from "@/types/excel";
 import { KeywordData } from "@/types/table";
 import { calculateSearchVolume } from "@/utils/excel-ratio";
-import { DataLabResponse } from "@/types/data-lab";
-import { keywordColumns } from "@/constants/default-excel-data";
-import { ExcelColumn } from "@/types/excel";
 
 /**
  * 연간 데이터를 엑셀 열로 변환하는 함수
@@ -76,7 +76,7 @@ export function formatRelatedKeywordTableData(
   results: RelatedKeywordResult[],
   searchKeywords: string[],
 ): any[] {
-  let rows: any[] = [];
+  const rows: any[] = [];
   let rowIndex = 1; // 행 번호 초기화
 
   results.forEach((result, resultIndex) => {

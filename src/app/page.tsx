@@ -1,7 +1,8 @@
 import { Metadata } from "next";
-import TabNavigation from "@/components/navigation/tab-navigation";
-import KeywordSearch from "@/components/keyword-search";
+
 import KeywordResults from "@/components/keyword-results";
+import KeywordSearch from "@/components/keyword-search";
+import TabNavigation from "@/components/navigation/tab-navigation";
 
 // 페이지별 메타데이터 추가
 export const metadata: Metadata = {

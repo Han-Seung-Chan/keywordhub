@@ -1,7 +1,8 @@
 import { Metadata } from "next";
+
 import TabNavigation from "@/components/navigation/tab-navigation";
-import { Card, CardContent } from "@/components/ui/card";
 import RelatedKeywords from "@/components/related-keywords/related-keywords";
+import { Card, CardContent } from "@/components/ui/card";
 
 // 페이지별 메타데이터 추가
 export const metadata: Metadata = {

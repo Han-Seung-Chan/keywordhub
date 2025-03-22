@@ -1,5 +1,7 @@
 "use client";
 
+import { format, parse } from "date-fns";
+import { memo, useMemo } from "react";
 import {
   Bar,
   BarChart,
@@ -7,11 +9,9 @@ import {
   ResponsiveContainer,
   XAxis,
 } from "recharts";
-import { format, parse } from "date-fns";
-import { memo, useMemo } from "react";
 
-import { ChartContainer, ChartTooltip } from "@/components/ui/chart";
 import { Card, CardContent } from "@/components/ui/card";
+import { ChartContainer, ChartTooltip } from "@/components/ui/chart";
 import { DataLabResponse } from "@/types/data-lab";
 
 // Props 타입 정의 추가

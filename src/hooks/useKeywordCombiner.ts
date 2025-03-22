@@ -1,11 +1,13 @@
-import { useState, useCallback, useMemo, useRef } from "react";
+import { useCallback, useMemo, useRef,useState } from "react";
+
+import { ALL_PATTERNS,INITIAL_KEYWORDS } from "@/constants/combiner";
+import { validateKeywordInput } from "@/utils/keyword-validation";
+
 import {
-  KeywordState,
   KeywordArrays,
   KeywordCounts,
+  KeywordState,
 } from "../types/keyword-combiner";
-import { INITIAL_KEYWORDS, ALL_PATTERNS } from "@/constants/combiner";
-import { validateKeywordInput } from "@/utils/keyword-validation";
 
 // 최대 허용 키워드 개수
 const MAX_KEYWORDS = 100;

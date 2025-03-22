@@ -1,6 +1,7 @@
-import { useEffect, useCallback, useMemo } from "react";
-import { KeywordData } from "@/types/table";
+import { useCallback, useEffect, useMemo } from "react";
+
 import { useSharedKeywordState } from "@/store/useSharedKeywordState";
+import { KeywordData } from "@/types/table";
 
 export function useKeywordResults() {
   // 공유 상태에서 값 가져오기

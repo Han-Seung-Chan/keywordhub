@@ -1,10 +1,11 @@
 "use client";
 
 import { memo } from "react";
-import { useKeywordCombiner } from "@/hooks/useKeywordCombiner";
+
+import { ErrorMessage, KeywordInputForm } from "@/components/common";
 import { PatternSelector } from "@/components/keyword-combiner/pattern-selector";
 import { ResultSection } from "@/components/keyword-combiner/result-section";
-import { ErrorMessage, KeywordInputForm } from "@/components/common";
+import { useKeywordCombiner } from "@/hooks/useKeywordCombiner";
 
 const KeywordCombiner = () => {
   const {

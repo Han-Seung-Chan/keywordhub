@@ -1,15 +1,16 @@
 "use client";
 
 import { memo, useMemo } from "react";
-import KeywordTable from "@/components/keyword-table/keyword-table";
+
 import {
+  EmptyResults,
   ResultsHeader,
   UsageGuide,
-  EmptyResults,
 } from "@/components/keyword-results";
-import { useKeywordResults } from "@/hooks/useKeywordResults";
-import { Card, CardContent } from "@/components/ui/card";
+import KeywordTable from "@/components/keyword-table/keyword-table";
 import LoadingProgress from "@/components/loading-progress";
+import { Card, CardContent } from "@/components/ui/card";
+import { useKeywordResults } from "@/hooks/useKeywordResults";
 import { KeywordData } from "@/types/table";
 
 // 결과 컨텐츠 컴포넌트

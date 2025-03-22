@@ -1,4 +1,4 @@
 export {
-  WebsiteStructuredData,
   SoftwareApplicationStructuredData,
+  WebsiteStructuredData,
 } from "./structured-data";

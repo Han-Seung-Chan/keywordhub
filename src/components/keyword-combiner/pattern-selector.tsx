@@ -1,10 +1,11 @@
 import { memo } from "react";
+
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
-  TWO_KEYWORD_PATTERNS,
-  THREE_KEYWORD_PATTERNS,
   FOUR_KEYWORD_PATTERNS,
+  THREE_KEYWORD_PATTERNS,
+  TWO_KEYWORD_PATTERNS,
 } from "@/constants/combiner";
 
 interface PatternSelectorProps {

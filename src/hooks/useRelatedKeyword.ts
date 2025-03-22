@@ -1,14 +1,15 @@
 "use client";
 
-import { useCallback, useRef, useState, useMemo } from "react";
+import { useCallback, useMemo,useRef, useState } from "react";
+
+import { fetchGeminiScores } from "@/lib/fetch-gemini";
 import { fetchKeywordData } from "@/lib/fetch-keywords";
+import { KeywordResponse } from "@/types/keyword-tool";
+import { RelatedKeywordResult } from "@/types/related-keyword";
 import {
   countKeywords,
   validateKeywordInput,
 } from "@/utils/keyword-validation";
-import { KeywordResponse } from "@/types/keyword-tool";
-import { RelatedKeywordResult } from "@/types/related-keyword";
-import { fetchGeminiScores } from "@/lib/fetch-gemini";
 
 // 최대 허용 키워드 개수
 const MAX_KEYWORDS = 10;

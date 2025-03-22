@@ -1,11 +1,12 @@
-import { useCallback, useRef, useState, useMemo } from "react";
+import { useCallback, useMemo,useRef, useState } from "react";
+
 import { defaultDataLab } from "@/constants/default-data-lab";
-import {
-  useSharedKeywordState,
-  KeywordSearchResult,
-} from "@/store/useSharedKeywordState";
-import { fetchBatchKeywordData } from "@/lib/fetch-keywords";
 import { fetchDatalabDataBatch } from "@/lib/fetch-data-lab";
+import { fetchBatchKeywordData } from "@/lib/fetch-keywords";
+import {
+  KeywordSearchResult,
+  useSharedKeywordState,
+} from "@/store/useSharedKeywordState";
 import { DataLabRequest } from "@/types/data-lab";
 import {
   countKeywords,

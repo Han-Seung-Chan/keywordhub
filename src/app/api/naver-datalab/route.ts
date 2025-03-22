@@ -1,6 +1,7 @@
-import { DataLabRequest, DataLabResponse } from "@/types/data-lab";
 import { NextRequest, NextResponse } from "next/server";
-import { validateEnvVariables, handleApiError } from "@/utils/naver-api";
+
+import { DataLabRequest, DataLabResponse } from "@/types/data-lab";
+import { handleApiError,validateEnvVariables } from "@/utils/naver-api";
 
 /**
  * 환경 변수에서 API 설정을 가져옵니다

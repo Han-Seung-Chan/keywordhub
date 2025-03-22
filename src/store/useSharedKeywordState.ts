@@ -1,8 +1,9 @@
 import { create } from "zustand";
-import { KeywordData } from "@/types/table";
+
 import { ApiResult } from "@/types/api";
-import { KeywordResponse } from "@/types/keyword-tool";
 import { DataLabResponse } from "@/types/data-lab";
+import { KeywordResponse } from "@/types/keyword-tool";
+import { KeywordData } from "@/types/table";
 
 // 키워드 검색 결과 타입
 export interface KeywordSearchResult {
