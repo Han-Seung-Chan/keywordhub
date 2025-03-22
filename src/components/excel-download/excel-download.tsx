@@ -10,7 +10,7 @@ import { ExcelColumn } from "@/types/excel";
 const DEFAULT_COL_WIDTH = 58;
 
 export interface ExcelDownloadProps {
-  data: any[];
+  data: Record<string, unknown>[];
   columns: ExcelColumn[];
   disabled: boolean;
   filename?: string; // 파일 이름
@@ -41,7 +41,7 @@ const ExcelDownloadButton = memo(
 
         // 데이터 변환 - 각 항목을 열 설정에 따라 변환
         const excelData = data.map((item) => {
-          const rowData: Record<string, any> = {};
+          const rowData: Record<string, unknown> = {};
 
           // 각 열 설정에 따라 데이터 매핑
           columns.forEach((column) => {

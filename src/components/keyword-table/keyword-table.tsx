@@ -5,14 +5,14 @@ import { Table } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { RefreshCw, GripVertical } from "lucide-react";
 import { useTableDrag } from "@/hooks/useTableDrag";
-import { HeaderInfo } from "@/types/table";
+import { HeaderInfo, KeywordData } from "@/types/table";
 import { DragDropContext } from "@/components/keyword-table/drag-components";
 import { HeaderRow } from "@/components/keyword-table/header-row";
 import { DataRows } from "@/components/keyword-table/data-rows";
 import { defaultHeader } from "@/constants/default-header";
 
 interface KeywordTableProps {
-  keywordData?: any[];
+  keywordData?: KeywordData[];
   headers?: HeaderInfo[];
   emptyMessage?: string;
 }

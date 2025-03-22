@@ -18,7 +18,7 @@ const getDataLabConfig = () => {
       clientId: process.env.NAVER_OPENAPI_CLIENT_ID!,
       clientSecret: process.env.NAVER_OPENAPI_CLIENT_SECRET!,
     };
-  } catch (error) {
+  } catch {
     throw new Error("네이버 Datalab API 인증 정보가 설정되지 않았습니다");
   }
 };
@@ -60,8 +60,8 @@ export async function POST(request: NextRequest) {
       const data: DataLabResponse = await response.json();
 
       return NextResponse.json(data);
-    } catch (error: any) {
-      if (error.message.includes("인증 정보")) {
+    } catch (error: unknown) {
+      if (error instanceof Error && error.message.includes("인증 정보")) {
         return NextResponse.json(
           { error: "API 인증 정보가 설정되지 않았습니다." },
           { status: 500 },
@@ -69,10 +69,11 @@ export async function POST(request: NextRequest) {
       }
       throw error;
     }
-  } catch (error) {
+  } catch (error: unknown) {
     return handleApiError(
-      error,
-      "네이버 데이터랩 API 처리 중 오류가 발생했습니다",
+      error instanceof Error
+        ? error
+        : new Error("네이버 데이터랩 API 처리 중 오류가 발생했습니다"),
     );
   }
 }

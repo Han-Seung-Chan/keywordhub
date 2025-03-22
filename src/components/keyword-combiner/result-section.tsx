@@ -4,6 +4,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { RefreshCw } from "lucide-react";
 import ExcelDownloadButton from "@/components/excel-download";
 import { memo, useMemo } from "react";
+import { ExcelColumn } from "@/types/excel";
 
 interface ResultSectionProps {
   result: string;
@@ -12,8 +13,8 @@ interface ResultSectionProps {
   onSpaceChange: (checked: boolean) => void;
   onReset: () => void;
   onGenerate: () => void;
-  getExcelData: () => any[];
-  getExcelColumns: () => any[];
+  getExcelData: () => Record<string, unknown>[];
+  getExcelColumns: () => ExcelColumn[];
 }
 
 export const ResultSection = memo(

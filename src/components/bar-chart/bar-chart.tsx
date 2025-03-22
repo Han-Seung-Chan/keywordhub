@@ -21,8 +21,31 @@ interface MonthlyRatioChartProps {
 
 // memo로 컴포넌트 감싸기
 const MonthlyRatioChart = memo(({ renderData }: MonthlyRatioChartProps) => {
+  const hasData = renderData?.results?.[0]?.data?.length > 0;
+
+  const formattedData = useMemo(() => {
+    if (!hasData) return [];
+
+    return renderData.results[0].data.map((item) => ({
+      ...item,
+      mainDisplayMonth: format(
+        parse(item.period, "yyyy-MM-dd", new Date()),
+        "yy-MM",
+      ),
+    }));
+  }, [hasData, renderData?.results?.[0]?.data]);
+
+  // 차트 설정 메모이제이션 - 항상 실행
+  const chartConfig = useMemo(
+    () => ({
+      margin: { top: 0, right: 5, left: 5, bottom: 5 },
+      cursorStyle: { fill: "hsl(var(--muted))", opacity: 0.15 },
+    }),
+    [],
+  );
+
   // 데이터가 없는 경우 빈 차트 렌더링
-  if (!renderData?.results?.[0]?.data?.length) {
+  if (!hasData) {
     return (
       <Card className="w-full rounded-none border-none bg-inherit py-1">
         <CardContent className="p-0">
@@ -33,26 +56,6 @@ const MonthlyRatioChart = memo(({ renderData }: MonthlyRatioChartProps) => {
       </Card>
     );
   }
-
-  // 데이터 포맷팅 메모이제이션
-  const formattedData = useMemo(() => {
-    return renderData.results[0].data.map((item) => ({
-      ...item,
-      mainDisplayMonth: format(
-        parse(item.period, "yyyy-MM-dd", new Date()),
-        "yy-MM",
-      ),
-    }));
-  }, [renderData.results[0].data]);
-
-  // 차트 설정 메모이제이션
-  const chartConfig = useMemo(
-    () => ({
-      margin: { top: 0, right: 5, left: 5, bottom: 5 },
-      cursorStyle: { fill: "hsl(var(--muted))", opacity: 0.15 },
-    }),
-    [],
-  );
 
   return (
     <Card className="w-full rounded-none border-none bg-inherit py-1">

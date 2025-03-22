@@ -29,7 +29,7 @@ const getApiConfig = (): ApiKeywordToolConfig => {
       secretKey: process.env.NAVER_SEARCH_AD_SECRET_KEY!,
       customerId: process.env.NAVER_SEARCH_AD_CUSTOMER_ID!,
     };
-  } catch (error: any) {
+  } catch {
     throw new Error("네이버 SearchAD API 인증 정보가 설정되지 않았습니다");
   }
 };
@@ -101,8 +101,8 @@ export async function POST(request: NextRequest) {
       const keywordData = await fetchKeywordData(keywords, apiConfig);
 
       return NextResponse.json(keywordData);
-    } catch (error: any) {
-      if (error.message.includes("인증 정보")) {
+    } catch (error: unknown) {
+      if (error instanceof Error && error.message.includes("인증 정보")) {
         return NextResponse.json(
           { error: "API 인증 정보가 설정되지 않았습니다." },
           { status: 500 },
@@ -111,7 +111,11 @@ export async function POST(request: NextRequest) {
 
       throw error;
     }
-  } catch (error: any) {
-    return handleApiError(error, "키워드 API 처리 중 오류가 발생했습니다");
+  } catch (error: unknown) {
+    return handleApiError(
+      error instanceof Error
+        ? error
+        : new Error("키워드 API 처리 중 오류가 발생했습니다"),
+    );
   }
 }

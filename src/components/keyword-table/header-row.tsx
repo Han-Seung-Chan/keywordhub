@@ -6,6 +6,7 @@ import {
 import { TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { HeaderInfo } from "@/types/table";
 import { GripVertical } from "lucide-react";
+import type { DraggableProvided } from "react-beautiful-dnd"; // 타입 import 추가
 
 interface HeaderRowProps {
   headers: HeaderInfo[];
@@ -14,17 +15,20 @@ interface HeaderRowProps {
 // memo로 컴포넌트 감싸기
 export const HeaderRow = memo(({ headers }: HeaderRowProps) => {
   // 드래그 핸들 렌더링 함수 - 불필요한 리렌더링 방지
-  const renderDragHandle = useCallback((provided: any) => {
-    return (
-      <div
-        className="mr-1 cursor-grab rounded hover:bg-gray-200"
-        {...provided.dragHandleProps}
-        title="드래그하여 순서 변경"
-      >
-        <GripVertical className="h-4 w-4 text-gray-500" />
-      </div>
-    );
-  }, []);
+  const renderDragHandle = useCallback(
+    (provided: Pick<DraggableProvided, "dragHandleProps">) => {
+      return (
+        <div
+          className="mr-1 cursor-grab rounded hover:bg-gray-200"
+          {...provided.dragHandleProps}
+          title="드래그하여 순서 변경"
+        >
+          <GripVertical className="h-4 w-4 text-gray-500" />
+        </div>
+      );
+    },
+    [],
+  );
 
   return (
     <TableHeader className="sticky top-0 z-20">

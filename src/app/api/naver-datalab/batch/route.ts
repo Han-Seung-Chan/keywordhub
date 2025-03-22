@@ -18,7 +18,7 @@ const getDataLabConfig = () => {
       clientId: process.env.NAVER_OPENAPI_CLIENT_ID!,
       clientSecret: process.env.NAVER_OPENAPI_CLIENT_SECRET!,
     };
-  } catch (error) {
+  } catch {
     throw new Error("네이버 Datalab API 인증 정보가 설정되지 않았습니다");
   }
 };
@@ -26,11 +26,17 @@ const getDataLabConfig = () => {
 /**
  * 단일 데이터랩 요청 처리
  */
+interface DataLabResponse {
+  success: boolean;
+  data: unknown | null;
+  error: string | null;
+}
+
 const fetchDataLabSingle = async (
   requestData: DataLabRequest,
   config: { baseUrl: string; clientId: string; clientSecret: string },
   requestId: string,
-) => {
+): Promise<DataLabResponse> => {
   try {
     const response = await fetch(config.baseUrl, {
       method: "POST",
@@ -57,12 +63,15 @@ const fetchDataLabSingle = async (
       data,
       error: null,
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error(`데이터랩 요청 처리 중 오류 (${requestId}):`, error);
     return {
       success: false,
       data: null,
-      error: error.message || "데이터랩 요청 처리 중 오류가 발생했습니다",
+      error:
+        error instanceof Error
+          ? error.message
+          : "데이터랩 요청 처리 중 오류가 발생했습니다",
     };
   }
 };
@@ -111,12 +120,12 @@ export async function POST(request: NextRequest) {
           acc[requestId] = result;
           return acc;
         },
-        {} as Record<string, any>,
+        {} as Record<string, DataLabResponse>,
       );
 
       return NextResponse.json(responseMap);
-    } catch (error: any) {
-      if (error.message.includes("인증 정보")) {
+    } catch (error: unknown) {
+      if (error instanceof Error && error.message.includes("인증 정보")) {
         return NextResponse.json(
           { error: "API 인증 정보가 설정되지 않았습니다." },
           { status: 500 },
@@ -124,10 +133,11 @@ export async function POST(request: NextRequest) {
       }
       throw error;
     }
-  } catch (error) {
+  } catch (error: unknown) {
     return handleApiError(
-      error,
-      "네이버 데이터랩 API 배치 처리 중 오류가 발생했습니다",
+      error instanceof Error
+        ? error
+        : new Error("네이버 데이터랩 API 배치 처리 중 오류가 발생했습니다"),
     );
   }
 }

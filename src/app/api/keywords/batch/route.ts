@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { ApiKeywordToolConfig } from "@/types/keyword-tool";
+import { ApiKeywordToolConfig, KeywordResponse } from "@/types/keyword-tool";
+import { ApiResult } from "@/types/api";
 import {
   getTimestamp,
   generateSignature,
@@ -26,7 +27,7 @@ const getApiConfig = (): ApiKeywordToolConfig => {
       secretKey: process.env.NAVER_SEARCH_AD_SECRET_KEY!,
       customerId: process.env.NAVER_SEARCH_AD_CUSTOMER_ID!,
     };
-  } catch (error: any) {
+  } catch {
     throw new Error("네이버 SearchAD API 인증 정보가 설정되지 않았습니다");
   }
 };
@@ -39,7 +40,7 @@ const getApiConfig = (): ApiKeywordToolConfig => {
 const fetchKeywordDataBatch = async (
   keywords: string[],
   config: ApiKeywordToolConfig,
-): Promise<Record<string, any>> => {
+): Promise<Record<string, ApiResult<KeywordResponse>>> => {
   if (keywords.length === 0) {
     return {};
   }
@@ -78,7 +79,7 @@ const fetchKeywordDataBatch = async (
     }
 
     // 결과를 키워드별로 매핑
-    const results: Record<string, any> = {};
+    const results: Record<string, ApiResult<KeywordResponse>> = {};
     if (data && data.keywordList) {
       // 대소문자 구분 없이 매칭하기 위한 맵 생성
       const keywordMap = new Map<string, string>();
@@ -87,7 +88,7 @@ const fetchKeywordDataBatch = async (
       });
 
       // 네이버 API 응답에서 relKeyword가 키워드 이름임
-      data.keywordList.forEach((item: any) => {
+      data.keywordList.forEach((item: KeywordResponse) => {
         const apiKeyword = item.relKeyword;
         // 원래 입력한 키워드 대소문자 형태 찾기
         const originalKeyword =
@@ -139,14 +140,17 @@ const fetchKeywordDataBatch = async (
     }
 
     return results;
-  } catch (error: any) {
+  } catch (error: unknown) {
     // 오류 발생 시 모든 키워드에 동일한 오류 반환
-    const errorResults: Record<string, any> = {};
+    const errorResults: Record<string, ApiResult<KeywordResponse>> = {};
     keywords.forEach((keyword) => {
       errorResults[keyword] = {
         success: false,
         data: null,
-        error: error.message || "키워드 데이터 요청 중 오류가 발생했습니다.",
+        error:
+          error instanceof Error
+            ? error.message
+            : "키워드 데이터 요청 중 오류가 발생했습니다.",
       };
     });
     return errorResults;
@@ -192,8 +196,8 @@ export async function POST(request: NextRequest) {
       }, {});
 
       return NextResponse.json(mergedResults);
-    } catch (error: any) {
-      if (error.message.includes("인증 정보")) {
+    } catch (error: unknown) {
+      if (error instanceof Error && error.message.includes("인증 정보")) {
         return NextResponse.json(
           { error: "API 인증 정보가 설정되지 않았습니다." },
           { status: 500 },
@@ -202,7 +206,11 @@ export async function POST(request: NextRequest) {
 
       throw error;
     }
-  } catch (error: any) {
-    return handleApiError(error, "키워드 API 배치 처리 중 오류가 발생했습니다");
+  } catch (error: unknown) {
+    return handleApiError(
+      error instanceof Error
+        ? error
+        : new Error("키워드 API 배치 처리 중 오류가 발생했습니다"),
+    );
   }
 }

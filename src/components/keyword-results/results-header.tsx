@@ -16,6 +16,20 @@ const ResultsHeader = memo(
     // 결과 유무 계산 최적화
     const hasResults = useMemo(() => data.length > 0, [data.length]);
 
+    // ExcelDownloadButton에 전달할 데이터를 Record<string, unknown>[] 형태로 변환
+    const excelData = useMemo(() => {
+      return data.map((item) => {
+        // KeywordData의 모든 속성을 Record<string, unknown>으로 변환
+        return Object.entries(item).reduce(
+          (acc, [key, value]) => {
+            acc[key] = value;
+            return acc;
+          },
+          {} as Record<string, unknown>,
+        );
+      });
+    }, [data]);
+
     // 결과 카운트 배지 컴포넌트 최적화
     const ResultCountBadge = useMemo(() => {
       if (resultCount <= 0) return null;
@@ -36,7 +50,7 @@ const ResultsHeader = memo(
           </h2>
           <div className="flex gap-2">
             <ExcelDownloadButton
-              data={data}
+              data={excelData} // 변환된 데이터 사용
               columns={getKeywordExcelColumns(data)}
               filename="키워드_조회_결과"
               sheetName="키워드조회"

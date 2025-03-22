@@ -1,30 +1,30 @@
 import { memo, useMemo } from "react";
 import { TableBody, TableCell, TableRow } from "@/components/ui/table";
-import { ColumnInfo, HeaderInfo } from "@/types/table";
+import { ColumnInfo, HeaderInfo, KeywordData } from "@/types/table";
+import { lazy } from "react";
+
+// 차트 컴포넌트를 lazy 로딩으로 변경
+const MonthlyRatioChart = lazy(() => import("@/components/bar-chart"));
+
+// 타입 정의
+interface ChartCellProps {
+  item: KeywordData;
+  columnId: string;
+  dataKey: string;
+  isDragging: boolean;
+}
 
 // 차트 셀 컴포넌트 - 독립적 메모이제이션
 const ChartCell = memo(
-  ({
-    item,
-    columnId,
-    dataKey,
-    isDragging,
-  }: {
-    item: any;
-    columnId: string;
-    dataKey: string;
-    isDragging: boolean;
-  }) => {
-    // 연관 키워드 컴포넌트는 차트 데이터가 없기 때문에 차트 사용이 필요할 때만 임포트
-    const MonthlyRatioChart = useMemo(() => {
-      if (dataKey === "yearPcGraph" || dataKey === "yearMoGraph") {
-        return require("@/components/bar-chart").default;
-      }
-      return null;
-    }, [dataKey]);
+  ({ item, columnId, dataKey, isDragging }: ChartCellProps) => {
+    // 연관 키워드 컴포넌트는 차트 데이터가 없기 때문에 차트 사용이 필요할 때만 불러옴
+    // useMemo를 사용하지 않고 상수로 변경
+    const isChartDataKey =
+      dataKey === "yearPcGraph" || dataKey === "yearMoGraph";
+    const hasChartData = Boolean(item.pcYearData);
 
     // 차트 컴포넌트가 없거나 연관 키워드 데이터에는 차트 데이터가 없는 경우 처리
-    if (!MonthlyRatioChart || !item.pcYearData) {
+    if (!isChartDataKey || !hasChartData) {
       return (
         <TableCell
           key={`${item.id}-${columnId}`}
@@ -40,6 +40,7 @@ const ChartCell = memo(
       );
     }
 
+    // 차트 데이터 메모이제이션
     const chartData = useMemo(() => {
       return dataKey === "yearPcGraph" ? item.pcYearData : item.mobileYearData;
     }, [item, dataKey]);
@@ -67,7 +68,7 @@ const DataCell = memo(
     column,
     isDragging,
   }: {
-    item: any;
+    item: KeywordData;
     column: ColumnInfo;
     isDragging: boolean;
   }) => {
@@ -92,37 +93,37 @@ const DataCell = memo(
 DataCell.displayName = "DataCell";
 
 // 셀 값 렌더링을 위한 범용 함수
-const renderCellValue = (item: any, dataKey?: string) => {
+const renderCellValue = (item: KeywordData, dataKey?: string): string => {
   // 데이터 키가 있고 아이템에 값이 있는 경우
-  if (dataKey && item[dataKey] !== undefined) {
+  if (dataKey && item[dataKey as keyof KeywordData] !== undefined) {
     // 숫자 포맷팅
-    if (typeof item[dataKey] === "number") {
-      return item[dataKey].toLocaleString();
+    if (typeof item[dataKey as keyof KeywordData] === "number") {
+      return (item[dataKey as keyof KeywordData] as number).toLocaleString();
     }
-    return item[dataKey];
+    return String(item[dataKey as keyof KeywordData]);
   }
 
   // 관계형 데이터 처리 (예: 중첩된 객체)
   if (dataKey && dataKey.includes(".")) {
     const parts = dataKey.split(".");
-    let value = item;
+    let value: unknown = item;
     for (const part of parts) {
       if (value === undefined || value === null) return "-";
-      value = value[part];
+      value = (value as Record<string, unknown>)[part];
     }
 
     if (typeof value === "number") {
       return value.toLocaleString();
     }
 
-    return value || "-";
+    return value !== undefined && value !== null ? String(value) : "-";
   }
 
   return "-";
 };
 
 interface TableCellMemoProps {
-  item: any;
+  item: KeywordData;
   column: ColumnInfo;
   isDragging: boolean;
 }
@@ -149,7 +150,7 @@ const TableCellMemo = memo(
 TableCellMemo.displayName = "TableCellMemo";
 
 interface TableRowMemoProps {
-  item: any;
+  item: KeywordData;
   columns: ColumnInfo[];
   draggingHeaderId?: string | null;
 }
@@ -181,7 +182,7 @@ const TableRowMemo = memo(
 TableRowMemo.displayName = "TableRowMemo";
 
 interface DataRowsProps {
-  keywordData: any[];
+  keywordData: KeywordData[];
   columns: HeaderInfo[];
   draggingHeaderId?: string | null;
   emptyMessage?: string;

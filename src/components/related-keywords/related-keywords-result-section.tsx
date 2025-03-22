@@ -2,10 +2,11 @@ import ExcelDownloadButton from "@/components/excel-download";
 import KeywordTable from "@/components/keyword-table/keyword-table";
 import { relatedKeywordColumns } from "@/constants/default-excel-data";
 import { relatedKeywordsHeader } from "@/constants/default-header";
+import { KeywordData } from "@/types/table"; // KeywordData 타입 추가
 
 interface ResultsSectionProps {
-  tableData: any[];
-  excelData: any[];
+  tableData: KeywordData[];
+  excelData: Record<string, unknown>[];
   allRelatedKeywordsLength: number;
 }
 
