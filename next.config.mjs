@@ -1,3 +1,4 @@
+/** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: false,
   output: "standalone",
@@ -42,8 +43,11 @@ const nextConfig = {
     return config;
   },
   experimental: {
-    turbo: {
-      // ...
+    serverComponentsExternalPackages: ["@google/generative-ai"],
+  },
+  api: {
+    bodyParser: {
+      sizeLimit: "10mb", // 이미지 요청을 위한 제한 크기 증가
     },
   },
 };
