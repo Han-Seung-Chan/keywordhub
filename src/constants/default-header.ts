@@ -80,15 +80,16 @@ export const relatedKeywordsHeader: HeaderInfo[] = [
     dataKey: "searchKeyword",
   },
   {
-    id: "totalCnt",
-    label: "총 검색량",
-    dataKey: "totalCnt",
-  },
-  {
     id: "relKeyword",
     label: "연관 키워드",
     dataKey: "relKeyword",
   },
+  {
+    id: "totalCnt",
+    label: "총 검색량",
+    dataKey: "totalCnt",
+  },
+
   {
     id: "monthlyPcQcCnt",
     label: "월간 PC 검색량",
@@ -128,5 +129,10 @@ export const relatedKeywordsHeader: HeaderInfo[] = [
     id: "plAvgDepth",
     label: "월간 노출 광고 수",
     dataKey: "plAvgDepth",
+  },
+  {
+    id: "relevanceScore",
+    label: "연관 점수",
+    dataKey: "relevanceScore",
   },
 ];

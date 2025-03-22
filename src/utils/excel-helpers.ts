@@ -84,16 +84,22 @@ export function formatRelatedKeywordTableData(
       searchKeywords[resultIndex] || result.keywordData.relKeyword || "";
 
     result.relatedKeywords.forEach((keyword: KeywordResponse) => {
+      if (typeof keyword.monthlyPcQcCnt === "string")
+        keyword.monthlyPcQcCnt = 0;
+      if (typeof keyword.monthlyMobileQcCnt === "string")
+        keyword.monthlyMobileQcCnt = 0;
+
       rows.push({
         id: rowIndex++,
         searchKeyword: searchKw,
-        totalCnt: keyword.monthlyPcQcCnt + keyword.monthlyMobileQcCnt,
-        ...keyword,
         // 만약 연관 키워드가 검색 키워드와 동일하면 표시를 다르게 함
         relKeyword:
-          keyword.relKeyword === searchKw
+          keyword.relKeyword == searchKw
             ? `${keyword.relKeyword} (검색 키워드)`
             : keyword.relKeyword,
+        totalCnt: keyword.monthlyPcQcCnt + keyword.monthlyMobileQcCnt,
+        ...keyword,
+        relevanceScore: keyword.relevanceScore,
       });
     });
   });
@@ -117,6 +123,11 @@ export function formatRelatedKeywordExcelData(
     const searchKw = searchKeywords[resultIndex] || "";
 
     result.relatedKeywords.forEach((keyword: KeywordResponse, index) => {
+      if (typeof keyword.monthlyPcQcCnt === "string")
+        keyword.monthlyPcQcCnt = 0;
+      if (typeof keyword.monthlyMobileQcCnt === "string")
+        keyword.monthlyMobileQcCnt = 0;
+
       rows.push({
         id: index + 1,
         keyword: searchKw,

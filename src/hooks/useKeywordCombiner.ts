@@ -243,7 +243,6 @@ export const useKeywordCombiner = () => {
     const hasDataInMultipleArrays2 =
       Object.values(keywordArrays).filter((subArr) => subArr.length > 0)
         .length >= 2;
-    console.log(hasDataInMultipleArrays2);
 
     return (
       selectedPatterns.length > 0 &&

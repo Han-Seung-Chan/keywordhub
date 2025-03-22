@@ -46,6 +46,10 @@ export function useKeywordResults() {
             return null;
           }
 
+          if (typeof data.monthlyPcQcCnt === "string") data.monthlyPcQcCnt = 0;
+          if (typeof data.monthlyMobileQcCnt === "string")
+            data.monthlyMobileQcCnt = 0;
+
           return {
             id: index + 1,
             keyword: keyword,

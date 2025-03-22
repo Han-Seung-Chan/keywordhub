@@ -39,4 +39,5 @@ export interface KeywordResponse {
   compIdx?: string; // 경쟁 정도
   plAvgDepth?: number; // 평균 노출 순위
   relKeywordCnt?: number; // 연관 키워드 수
+  relevanceScore?: number; // 연관도 점수
 }

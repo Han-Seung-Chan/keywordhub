@@ -8,6 +8,7 @@ import {
 } from "@/utils/keyword-validation";
 import { KeywordResponse } from "@/types/keyword-tool";
 import { RelatedKeywordResult } from "@/types/related-keyword";
+import { fetchGeminiScores } from "@/lib/fetch-gemini";
 
 // 최대 허용 키워드 개수
 const MAX_KEYWORDS = 10;
@@ -73,16 +74,55 @@ export function useRelatedKeyword() {
           (data) => data.monthlyMobileQcCnt > 0 || data.monthlyPcQcCnt > 0,
         );
 
-        // 연관 키워드 결과 추가
-        setResults((prevResults) => [
-          ...prevResults,
-          {
-            keywordData: result.data[0],
-            relatedKeywords,
-            isLoading: false,
-            error: null,
-          },
-        ]);
+        // 연관 키워드의 키워드명(relKeyword)만 추출
+        const relKeywordNames = relatedKeywords.map((item) => item.relKeyword);
+
+        // Gemini API 호출하여 관련도 스코어 가져오기
+        const scoresResult = await fetchGeminiScores(
+          currentKeyword,
+          relKeywordNames,
+        );
+
+        if (scoresResult.success && scoresResult.data) {
+          // 스코어와 연관 키워드를 결합
+          const keywordsWithScores = relatedKeywords.map((keyword, index) => ({
+            ...keyword,
+            relevanceScore: scoresResult.data[index] || 0, // 기본값 0
+          }));
+
+          // 결과에 추가
+          setResults((prevResults) => [
+            ...prevResults,
+            {
+              keywordData: result.data[0],
+              relatedKeywords: keywordsWithScores,
+              isLoading: false,
+              error: null,
+            },
+          ]);
+        } else {
+          console.warn(
+            `키워드 '${currentKeyword}'의 연관도 스코어 가져오기 실패:`,
+            scoresResult.error,
+          );
+
+          // 기본 스코어와 연관 키워드 결합
+          const keywordsWithDefaultScores = relatedKeywords.map((keyword) => ({
+            ...keyword,
+            relevanceScore: 0,
+          }));
+
+          // 결과에 추가
+          setResults((prevResults) => [
+            ...prevResults,
+            {
+              keywordData: result.data[0],
+              relatedKeywords: keywordsWithDefaultScores,
+              isLoading: false,
+              error: scoresResult.error || null,
+            },
+          ]);
+        }
       } else {
         // 오류 처리
         setResults((prevResults) => [
@@ -182,8 +222,8 @@ export function useRelatedKeyword() {
     keywordsToProcess.current = [...keywords];
     processingRef.current = false;
 
-    // 연관 키워드 처리 시작 - 최대 5개 동시 처리
-    const maxConcurrent = 5;
+    // 연관 키워드 처리 시작 - 최대 1개 동시 처리
+    const maxConcurrent = 1;
     for (let i = 0; i < Math.min(maxConcurrent, keywords.length); i++) {
       processNextKeyword();
     }
@@ -203,16 +243,6 @@ export function useRelatedKeyword() {
     setResults([]);
     setProcessedCount(0);
     setTotalKeywords(0);
-    keywordsToProcess.current = [];
-  }, []);
-
-  // 검색 중단 핸들러
-  const handleStop = useCallback(() => {
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-    }
-
-    setIsSearching(false);
     keywordsToProcess.current = [];
   }, []);
 
@@ -258,7 +288,6 @@ export function useRelatedKeyword() {
     totalKeywords,
     handleSearch,
     handleClear,
-    handleStop,
     maxKeywords: MAX_KEYWORDS,
     searchKeywords,
   };
