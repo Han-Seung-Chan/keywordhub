@@ -85,6 +85,11 @@ export const relatedKeywordsHeader: HeaderInfo[] = [
     dataKey: "relKeyword",
   },
   {
+    id: "relevanceScore",
+    label: "연관도",
+    dataKey: "relevanceScore",
+  },
+  {
     id: "totalCnt",
     label: "총 검색량",
     dataKey: "totalCnt",
@@ -129,10 +134,5 @@ export const relatedKeywordsHeader: HeaderInfo[] = [
     id: "plAvgDepth",
     label: "월간 노출 광고 수",
     dataKey: "plAvgDepth",
-  },
-  {
-    id: "relevanceScore",
-    label: "연관 점수",
-    dataKey: "relevanceScore",
   },
 ];

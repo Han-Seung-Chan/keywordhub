@@ -34,6 +34,7 @@ export const relatedKeywordColumns: ExcelColumn[] = [
   { key: "id", header: "번호", width: 26 },
   { key: "keyword", header: "키워드명", width: 48 },
   { key: "relKeyword", header: "연관키워드", width: 48 },
+  { key: "relevanceScore", header: "연관도", width: 50 },
   { key: "totalCnt", header: "총 검색량", width: 52 },
   {
     key: "monthlyPcQcCnt",

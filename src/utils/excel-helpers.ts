@@ -89,16 +89,26 @@ export function formatRelatedKeywordTableData(
       if (typeof keyword.monthlyMobileQcCnt === "string")
         keyword.monthlyMobileQcCnt = 0;
 
+      // 연관 키워드와 검색 키워드 비교 강화
+      const isSearchKeyword =
+        keyword.relKeyword &&
+        searchKw &&
+        keyword.relKeyword.trim().toLowerCase() ===
+          searchKw.trim().toLowerCase();
+
+      // relKeyword 속성을 분리하여 덮어쓰기 방지
+      const { relKeyword: originalRelKeyword, ...keywordWithoutRelKeyword } =
+        keyword;
+
       rows.push({
         id: rowIndex++,
         searchKeyword: searchKw,
         // 만약 연관 키워드가 검색 키워드와 동일하면 표시를 다르게 함
-        relKeyword:
-          keyword.relKeyword == searchKw
-            ? `${keyword.relKeyword} (검색 키워드)`
-            : keyword.relKeyword,
+        relKeyword: isSearchKeyword
+          ? `${originalRelKeyword} (검색 키워드)`
+          : originalRelKeyword,
         totalCnt: keyword.monthlyPcQcCnt + keyword.monthlyMobileQcCnt,
-        ...keyword,
+        ...keywordWithoutRelKeyword,
         relevanceScore: keyword.relevanceScore,
       });
     });
@@ -106,7 +116,6 @@ export function formatRelatedKeywordTableData(
 
   return rows;
 }
-
 /**
  * 엑셀 다운로드용 키워드 데이터 형식 변환
  * @param results 검색 결과 배열
@@ -141,6 +150,7 @@ export function formatRelatedKeywordExcelData(
         monthlyAveMobileCtr: keyword.monthlyAveMobileCtr,
         compIdx: keyword.compIdx || "-",
         plAvgDepth: keyword.plAvgDepth || 0,
+        relevanceScore: keyword.relevanceScore,
       });
     });
   });
