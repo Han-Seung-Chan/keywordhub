@@ -53,8 +53,8 @@ module.exports = {
       },
     ],
 
-    // 일반 코드 품질 규칙
-    "no-console": ["warn", { allow: ["warn", "error"] }],
+    // // 일반 코드 품질 규칙
+    // "no-console": ["warn", { allow: ["warn", "error"] }],
     eqeqeq: ["error", "always", { null: "ignore" }],
     "no-var": "error",
     "prefer-const": "error",

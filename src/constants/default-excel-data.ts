@@ -41,7 +41,6 @@ export const relatedKeywordColumns: ExcelColumn[] = [
     header: "월간 PC 검색량",
     width: 75,
   },
-  ,
   {
     key: "monthlyAvePcClkCnt",
     header: "월간 PC 평균 클릭 수",

@@ -22,6 +22,10 @@ interface MonthlyRatioChartProps {
 // memo로 컴포넌트 감싸기
 const MonthlyRatioChart = memo(({ renderData }: MonthlyRatioChartProps) => {
   const hasData = renderData?.results?.[0]?.data?.length > 0;
+  const dataItems = useMemo(
+    () => renderData?.results?.[0]?.data || [],
+    [renderData],
+  );
 
   const formattedData = useMemo(() => {
     if (!hasData) return [];
@@ -33,7 +37,7 @@ const MonthlyRatioChart = memo(({ renderData }: MonthlyRatioChartProps) => {
         "yy-MM",
       ),
     }));
-  }, [hasData, renderData?.results?.[0]?.data]);
+  }, [hasData, dataItems]);
 
   // 차트 설정 메모이제이션 - 항상 실행
   const chartConfig = useMemo(

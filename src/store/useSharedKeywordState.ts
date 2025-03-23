@@ -115,7 +115,7 @@ export const useSharedKeywordState = create<SharedKeywordState>((set, get) => ({
 
   // 상태 초기화 (캐시는 유지)
   resetAll: () =>
-    set((state) => ({
+    set(() => ({
       isSearching: false,
       progress: 0,
       error: null,
@@ -123,6 +123,5 @@ export const useSharedKeywordState = create<SharedKeywordState>((set, get) => ({
       processedCount: 0,
       totalCount: 0,
       tableData: [],
-      // 캐시는 유지 - cachedResults: state.cachedResults
     })),
 }));

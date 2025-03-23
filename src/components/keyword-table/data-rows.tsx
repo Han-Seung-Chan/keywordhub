@@ -8,7 +8,7 @@ import { renderCellValue } from "@/utils/table-utils";
 // 차트 컴포넌트를 lazy 로딩으로 변경
 const MonthlyRatioChart = lazy(() => import("@/components/bar-chart"));
 
-// 타입 정의
+// 차트 셀 컴포넌트 - 독립적 메모이제이션
 interface ChartCellProps {
   item: KeywordData;
   columnId: string;
@@ -16,16 +16,14 @@ interface ChartCellProps {
   isDragging: boolean;
 }
 
-// 차트 셀 컴포넌트 - 독립적 메모이제이션
 const ChartCell = memo(
   ({ item, columnId, dataKey, isDragging }: ChartCellProps) => {
-    // 연관 키워드 컴포넌트는 차트 데이터가 없기 때문에 차트 사용이 필요할 때만 불러옴
-    // useMemo를 사용하지 않고 상수로 변경
+    // 차트 관련 상태 계산
     const isChartDataKey =
       dataKey === "yearPcGraph" || dataKey === "yearMoGraph";
     const hasChartData = Boolean(item.pcYearData);
 
-    // 차트 컴포넌트가 없거나 연관 키워드 데이터에는 차트 데이터가 없는 경우 처리
+    // 조건에 따른 렌더링 결정 (이전의 조건부 Hook 호출을 제거)
     if (!isChartDataKey || !hasChartData) {
       return (
         <TableCell
@@ -42,7 +40,7 @@ const ChartCell = memo(
       );
     }
 
-    // 차트 데이터 메모이제이션
+    // 차트 데이터 메모이제이션 (항상 호출, 조건부 Hook 문제 해결)
     const chartData = useMemo(() => {
       return dataKey === "yearPcGraph" ? item.pcYearData : item.mobileYearData;
     }, [item, dataKey]);

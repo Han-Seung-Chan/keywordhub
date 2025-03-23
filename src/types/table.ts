@@ -23,4 +23,7 @@ export interface HeaderInfo {
 }
 
 // 열 구조를 나타내는 인터페이스
-export interface ColumnInfo extends HeaderInfo {}
+export interface ColumnInfo extends HeaderInfo {
+  width?: number;
+  visible?: boolean;
+}

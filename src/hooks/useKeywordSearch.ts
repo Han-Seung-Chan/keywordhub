@@ -1,4 +1,4 @@
-import { useCallback, useMemo,useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 
 import { defaultDataLab } from "@/constants/default-data-lab";
 import { fetchDatalabDataBatch } from "@/lib/fetch-data-lab";
@@ -53,7 +53,7 @@ export function useKeywordSearch() {
   // 유효성 검사
   const validationStatus = useMemo(
     () => validateKeywordInput(searchKeyword, MAX_KEYWORDS),
-    [searchKeyword, MAX_KEYWORDS],
+    [searchKeyword],
   );
 
   // 검색 유효성 검사

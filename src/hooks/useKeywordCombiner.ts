@@ -1,6 +1,6 @@
-import { useCallback, useMemo, useRef,useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 
-import { ALL_PATTERNS,INITIAL_KEYWORDS } from "@/constants/combiner";
+import { ALL_PATTERNS, INITIAL_KEYWORDS } from "@/constants/combiner";
 import { validateKeywordInput } from "@/utils/keyword-validation";
 
 import {
@@ -61,13 +61,7 @@ export const useKeywordCombiner = () => {
     if (!validateKeyword4.isValid) return validateKeyword4;
 
     return { isValid: true, errorMessage: null };
-  }, [
-    keywordsRef.current.keyword1,
-    keywordsRef.current.keyword2,
-    keywordsRef.current.keyword3,
-    keywordsRef.current.keyword4,
-    MAX_KEYWORDS,
-  ]);
+  }, []);
 
   // 검색 유효성 검사
   const validateSearch = useCallback((): boolean => {
@@ -162,20 +156,12 @@ export const useKeywordCombiner = () => {
   // 각 키워드 그룹을 배열로 변환
   const keywordArrays = useMemo<KeywordArrays>(() => {
     return {
-      "1": keywordsRef.current.keyword1
-        .split("\n")
-        .filter((k) => k.trim() !== ""),
-      "2": keywordsRef.current.keyword2
-        .split("\n")
-        .filter((k) => k.trim() !== ""),
-      "3": keywordsRef.current.keyword3
-        .split("\n")
-        .filter((k) => k.trim() !== ""),
-      "4": keywordsRef.current.keyword4
-        .split("\n")
-        .filter((k) => k.trim() !== ""),
+      "1": keywords.keyword1.split("\n").filter((k) => k.trim() !== ""),
+      "2": keywords.keyword2.split("\n").filter((k) => k.trim() !== ""),
+      "3": keywords.keyword3.split("\n").filter((k) => k.trim() !== ""),
+      "4": keywords.keyword4.split("\n").filter((k) => k.trim() !== ""),
     };
-  }, [keywordsRef.current]);
+  }, [keywords]);
 
   // 키워드 개수 계산
   const keywordCounts = useMemo<KeywordCounts>(() => {
@@ -238,14 +224,15 @@ export const useKeywordCombiner = () => {
 
     // 결과 설정
     setResult(uniqueCombinations.join("\n"));
-  }, [selectedPatterns, keywordArrays, addSpaceBetweenKeywords]);
+  }, [
+    selectedPatterns,
+    keywordArrays,
+    addSpaceBetweenKeywords,
+    validateSearch,
+  ]);
 
   // 조합 가능 여부 체크
   const canCombine = useMemo(() => {
-    const hasDataInMultipleArrays2 =
-      Object.values(keywordArrays).filter((subArr) => subArr.length > 0)
-        .length >= 2;
-
     return (
       selectedPatterns.length > 0 &&
       Object.values(keywordArrays).some((arr) => arr.length > 0) &&
