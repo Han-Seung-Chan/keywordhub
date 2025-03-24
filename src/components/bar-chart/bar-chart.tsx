@@ -19,25 +19,28 @@ interface MonthlyRatioChartProps {
   renderData: DataLabResponse;
 }
 
-// memo로 컴포넌트 감싸기
 const MonthlyRatioChart = memo(({ renderData }: MonthlyRatioChartProps) => {
-  const hasData = renderData?.results?.[0]?.data?.length > 0;
-  const dataItems = useMemo(
-    () => renderData?.results?.[0]?.data || [],
-    [renderData],
-  );
+  // 안전하게 데이터 소스 추출 - 종속성 문제 해결
+  const dataSource = useMemo(() => {
+    if (!renderData?.results?.[0]?.data) return [];
+    return renderData.results[0].data;
+  }, [renderData]);
 
+  // 데이터 존재 여부 확인 - 추출된 데이터 소스 사용
+  const hasData = dataSource.length > 0;
+
+  // 포맷된 데이터 생성 - 추출된 데이터 소스에 의존
   const formattedData = useMemo(() => {
     if (!hasData) return [];
 
-    return renderData.results[0].data.map((item) => ({
+    return dataSource.map((item) => ({
       ...item,
       mainDisplayMonth: format(
         parse(item.period, "yyyy-MM-dd", new Date()),
         "yy-MM",
       ),
     }));
-  }, [hasData, dataItems]);
+  }, [hasData, dataSource]); // 이제 dataSource에 의존
 
   // 차트 설정 메모이제이션 - 항상 실행
   const chartConfig = useMemo(

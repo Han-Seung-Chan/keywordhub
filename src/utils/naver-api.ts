@@ -4,13 +4,17 @@ import { NextResponse } from "next/server";
 /**
  * API 응답 오류를 처리하는 공통 함수
  */
-export const handleApiError = (error: any, customMessage?: string) => {
+export const handleApiError = (
+  error: Error | unknown,
+  customMessage?: string,
+) => {
   console.error(customMessage || "API 처리 중 오류:", error);
+  const errorMessage = error instanceof Error ? error.message : String(error);
 
   return NextResponse.json(
     {
       error: customMessage || "서버 내부 오류가 발생했습니다.",
-      message: error.message,
+      message: errorMessage,
     },
     { status: 500 },
   );

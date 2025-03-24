@@ -1,13 +1,12 @@
-// src/lib/fetch-gemini.ts
 import { ApiResult } from "@/types/api";
 
 // ----------------- 타입 정의 -----------------
 
 // 요청 큐 항목 타입
-interface QueueItem {
-  requestFn: () => Promise<any>;
-  resolve: (value: any) => void;
-  reject: (reason?: any) => void;
+interface QueueItem<T> {
+  requestFn: () => Promise<T>;
+  resolve: (value: T) => void;
+  reject: (reason?: Error | unknown) => void;
 }
 
 // ----------------- 유틸리티 함수 -----------------
@@ -65,7 +64,7 @@ async function fetchWithThrottleAndRetry(
  * API 요청을 제한된 속도로 처리하는 큐 시스템
  */
 class RequestQueue {
-  private queue: QueueItem[] = [];
+  private queue: QueueItem<unknown>[] = [];
   private processing: boolean = false;
   private interval: number;
 

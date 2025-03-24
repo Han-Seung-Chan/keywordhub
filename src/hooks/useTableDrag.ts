@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { DraggableLocation, DropResult } from "react-beautiful-dnd";
 
 import { HeaderInfo } from "@/types/table";
 
@@ -6,6 +7,14 @@ const LOCAL_STORAGE_KEY = "keyword-table-headers";
 
 interface UseTableDragProps {
   initialHeaders: HeaderInfo[]; // 초기 헤더 상태를 저장하기 위한 prop
+}
+
+// DragStart 이벤트 타입 정의
+interface DragStartEvent {
+  draggableId: string;
+  type: string;
+  source: DraggableLocation;
+  mode: "FLUID" | "SNAP";
 }
 
 export function useTableDrag({ initialHeaders }: UseTableDragProps) {
@@ -23,7 +32,9 @@ export function useTableDrag({ initialHeaders }: UseTableDragProps) {
 
       // 헤더 아이디 목록 검증 (새로운 헤더가 추가되었을 수 있음)
       const initialHeaderIds = new Set(initialHeaders.map((h) => h.id));
-      const savedHeaderIds = new Set(parsedHeaders.map((h) => h.id));
+      const savedHeaderIds = new Set(
+        parsedHeaders.map((h: HeaderInfo) => h.id),
+      );
 
       // 모든 초기 헤더가 저장된 헤더에 있는지 확인
       const allHeadersExist = Array.from(initialHeaderIds).every((id) =>
@@ -43,14 +54,14 @@ export function useTableDrag({ initialHeaders }: UseTableDragProps) {
     return headers.map((header) => header.id);
   }, [headers]);
 
-  // 드래그 시작 핸들러
-  const onDragStart = useCallback((start: any) => {
+  // 드래그 시작 핸들러 - 명시적 타입 적용
+  const onDragStart = useCallback((start: DragStartEvent) => {
     setDraggingHeaderId(start.draggableId);
   }, []);
 
-  // 드래그 앤 드롭 이벤트 핸들러
+  // 드래그 앤 드롭 이벤트 핸들러 - 명시적 타입 적용
   const onDragEnd = useCallback(
-    (result: any) => {
+    (result: DropResult) => {
       setDraggingHeaderId(null);
 
       // 드롭 영역 밖으로 드래그된 경우

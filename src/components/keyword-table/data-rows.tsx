@@ -23,7 +23,15 @@ const ChartCell = memo(
       dataKey === "yearPcGraph" || dataKey === "yearMoGraph";
     const hasChartData = Boolean(item.pcYearData);
 
-    // 조건에 따른 렌더링 결정 (이전의 조건부 Hook 호출을 제거)
+    const chartData = useMemo(() => {
+      if (isChartDataKey && hasChartData) {
+        return dataKey === "yearPcGraph"
+          ? item.pcYearData
+          : item.mobileYearData;
+      }
+      return null;
+    }, [isChartDataKey, hasChartData, dataKey, item]);
+
     if (!isChartDataKey || !hasChartData) {
       return (
         <TableCell
@@ -40,11 +48,6 @@ const ChartCell = memo(
       );
     }
 
-    // 차트 데이터 메모이제이션 (항상 호출, 조건부 Hook 문제 해결)
-    const chartData = useMemo(() => {
-      return dataKey === "yearPcGraph" ? item.pcYearData : item.mobileYearData;
-    }, [item, dataKey]);
-
     return (
       <TableCell
         key={`${item.id}-${columnId}`}
@@ -53,7 +56,7 @@ const ChartCell = memo(
           backgroundColor: isDragging ? "rgba(209, 213, 219, 0.8)" : undefined,
         }}
       >
-        <MonthlyRatioChart renderData={chartData} />
+        {chartData ? <MonthlyRatioChart renderData={chartData} /> : "-"}
       </TableCell>
     );
   },

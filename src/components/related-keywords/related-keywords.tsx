@@ -9,6 +9,7 @@ import { ResultsSection } from "@/components/related-keywords/related-keywords-r
 import { Card, CardContent } from "@/components/ui/card";
 import { useRelatedKeyword } from "@/hooks/useRelatedKeyword";
 import {
+  convertToKeywordData,
   formatRelatedKeywordExcelData,
   formatRelatedKeywordTableData,
 } from "@/utils/excel-helpers";
@@ -32,7 +33,11 @@ export default function RelatedKeywords() {
   } = useRelatedKeyword();
 
   const tableData = useMemo(() => {
-    return formatRelatedKeywordTableData(results, searchKeywords);
+    const formattedData = formatRelatedKeywordTableData(
+      results,
+      searchKeywords,
+    );
+    return convertToKeywordData(formattedData);
   }, [results, searchKeywords]);
 
   const excelData = useMemo(() => {

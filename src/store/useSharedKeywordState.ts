@@ -53,7 +53,7 @@ interface SharedKeywordState {
 }
 
 // 공유 상태 스토어 생성
-export const useSharedKeywordState = create<SharedKeywordState>((set, get) => ({
+export const useSharedKeywordState = create<SharedKeywordState>((set) => ({
   // 키워드 입력 상태
   searchKeyword: "",
   setSearchKeyword: (keyword) => set({ searchKeyword: keyword }),

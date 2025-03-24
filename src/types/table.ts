@@ -13,6 +13,7 @@ export interface KeywordData {
   plAvgDepth: number;
   pcYearData: DataLabResponse;
   mobileYearData: DataLabResponse;
+  totalCnt: number;
 }
 
 // 헤더 정보를 담는 인터페이스

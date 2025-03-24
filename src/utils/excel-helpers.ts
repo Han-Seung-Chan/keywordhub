@@ -1,6 +1,6 @@
 import { keywordColumns } from "@/constants/default-excel-data";
 import { DataLabResponse } from "@/types/data-lab";
-import { ExcelColumn } from "@/types/excel";
+import { ExcelColumn, ExcelRow, FormattedKeywordRow } from "@/types/excel";
 import { KeywordData } from "@/types/table";
 import { calculateSearchVolume } from "@/utils/excel-ratio";
 
@@ -26,7 +26,7 @@ export function createYearDataColumns(
       key: `${prefix}_${yearMonth}`,
       header: `${prefix.toUpperCase()}_${yearMonth}`,
       width: 58,
-      formatter: (_: any, rowData: KeywordData) => {
+      formatter: (_: unknown, rowData: KeywordData) => {
         // 원본 데이터에서 해당 월 데이터 찾기
         const monthDatum = rowData[dataType]?.results?.[0]?.data?.find(
           (d) => d.period.substring(2, 7) === yearMonth,
@@ -75,8 +75,8 @@ import { RelatedKeywordResult } from "@/types/related-keyword";
 export function formatRelatedKeywordTableData(
   results: RelatedKeywordResult[],
   searchKeywords: string[],
-): any[] {
-  const rows: any[] = [];
+): FormattedKeywordRow[] {
+  const rows: FormattedKeywordRow[] = [];
   let rowIndex = 1; // 행 번호 초기화
 
   results.forEach((result, resultIndex) => {
@@ -116,6 +116,35 @@ export function formatRelatedKeywordTableData(
 
   return rows;
 }
+
+/**
+ * FormattedKeywordRow 배열을 KeywordData 배열로 변환하는 함수
+ * @param rows FormattedKeywordRow 배열
+ * @returns KeywordData 배열
+ */
+export function convertToKeywordData(
+  rows: FormattedKeywordRow[],
+): KeywordData[] {
+  return rows.map((row) => {
+    const keywordData: KeywordData = {
+      id: row.id,
+      keyword: row.relKeyword,
+      monthlyPcQcCnt: Number(row.monthlyPcQcCnt) || 0,
+      monthlyAvePcClkCnt: Number(row.monthlyAvePcClkCnt) || 0,
+      monthlyAvePcCtr: Number(row.monthlyAvePcCtr) || 0,
+      monthlyMobileQcCnt: Number(row.monthlyMobileQcCnt) || 0,
+      monthlyAveMobileClkCnt: Number(row.monthlyAveMobileClkCnt) || 0,
+      monthlyAveMobileCtr: Number(row.monthlyAveMobileCtr) || 0,
+      compIdx: String(row.compIdx) || "낮음",
+      plAvgDepth: Number(row.plAvgDepth) || 0,
+      totalCnt: Number(row.totalCnt) || 0,
+      pcYearData: null,
+      mobileYearData: null,
+    };
+    return keywordData;
+  });
+}
+
 /**
  * 엑셀 다운로드용 키워드 데이터 형식 변환
  * @param results 검색 결과 배열
@@ -125,8 +154,8 @@ export function formatRelatedKeywordTableData(
 export function formatRelatedKeywordExcelData(
   results: RelatedKeywordResult[],
   searchKeywords: string[],
-): any[] {
-  const rows: any[] = [];
+): ExcelRow[] {
+  const rows: ExcelRow[] = [];
 
   results.forEach((result, resultIndex) => {
     const searchKw = searchKeywords[resultIndex] || "";
