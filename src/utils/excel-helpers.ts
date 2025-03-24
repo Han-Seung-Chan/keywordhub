@@ -138,6 +138,9 @@ export function convertToKeywordData(
       compIdx: String(row.compIdx) || "낮음",
       plAvgDepth: Number(row.plAvgDepth) || 0,
       totalCnt: Number(row.totalCnt) || 0,
+      relevanceScore: Number(row.relevanceScore) || 0,
+      relKeyword: String(row.relKeyword) || "",
+      searchKeyword: String(row.searchKeyword) || "",
       pcYearData: null,
       mobileYearData: null,
     };

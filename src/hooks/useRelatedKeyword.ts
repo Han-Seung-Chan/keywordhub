@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo,useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 
 import { fetchGeminiScores } from "@/lib/fetch-gemini";
 import { fetchKeywordData } from "@/lib/fetch-keywords";
@@ -13,6 +13,14 @@ import {
 
 // 최대 허용 키워드 개수
 const MAX_KEYWORDS = 10;
+
+// 각 단계별 진행률 가중치 설정
+const PROGRESS_WEIGHTS = {
+  INITIAL: 5, // 초기 상태
+  KEYWORD_FETCH: 45, // fetchKeywordData 호출 - 45%
+  GEMINI_FETCH: 45, // fetchGeminiScores 호출 - 45%
+  COMPLETION: 5, // 완료 처리 - 5%
+};
 
 export function useRelatedKeyword() {
   // 상태 관리
@@ -50,6 +58,28 @@ export function useRelatedKeyword() {
     return true;
   }, [validationStatus]);
 
+  // Gemini API 배치 처리 진행률 콜백
+  const onGeminiBatchProgress = useCallback(
+    (batchIndex: number, totalBatches: number) => {
+      // Gemini 배치 처리 진행률 (45% 중 배치 처리 비율만큼)
+      const baseProgress =
+        PROGRESS_WEIGHTS.INITIAL + PROGRESS_WEIGHTS.KEYWORD_FETCH;
+      const batchProgress =
+        (batchIndex / totalBatches) * PROGRESS_WEIGHTS.GEMINI_FETCH;
+
+      const newProgress = Math.min(
+        baseProgress + batchProgress,
+        PROGRESS_WEIGHTS.INITIAL +
+          PROGRESS_WEIGHTS.KEYWORD_FETCH +
+          PROGRESS_WEIGHTS.GEMINI_FETCH -
+          1,
+      );
+
+      setProgress(newProgress);
+    },
+    [],
+  );
+
   // 현재 처리중인 키워드에 대한 연관 키워드 가져오기
   const processNextKeyword = useCallback(async () => {
     if (processingRef.current || keywordsToProcess.current.length === 0) {
@@ -65,8 +95,14 @@ export function useRelatedKeyword() {
     }
 
     try {
-      // 개별 키워드에 대해 API 호출
+      // 개별 키워드에 대해 API 호출 시작 - 기본 진행률 적용
+      setProgress(PROGRESS_WEIGHTS.INITIAL);
+
+      // 키워드 데이터 가져오기 시작
       const result = await fetchKeywordData(currentKeyword);
+
+      // 키워드 데이터 조회 완료 - 진행률 업데이트
+      setProgress(PROGRESS_WEIGHTS.INITIAL + PROGRESS_WEIGHTS.KEYWORD_FETCH);
 
       // 결과 처리
       if (result.success && result.data.length) {
@@ -78,10 +114,11 @@ export function useRelatedKeyword() {
         // 연관 키워드의 키워드명(relKeyword)만 추출
         const relKeywordNames = relatedKeywords.map((item) => item.relKeyword);
 
-        // Gemini API 호출하여 관련도 스코어 가져오기
+        // Gemini API 호출하여 관련도 스코어 가져오기 (진행률 콜백 전달)
         const scoresResult = await fetchGeminiScores(
           currentKeyword,
           relKeywordNames,
+          onGeminiBatchProgress,
         );
 
         if (scoresResult.success && scoresResult.data) {
@@ -137,16 +174,17 @@ export function useRelatedKeyword() {
         ]);
       }
 
-      // 진행률 업데이트
+      // 진행률 업데이트 - 키워드 하나 완료 (gemini까지 완료된 상태)
       const newProcessedCount = processedCount + 1;
       setProcessedCount(newProcessedCount);
 
-      // 진행률 계산 (0~100%)
-      const newProgress = Math.min(
-        10 + Math.floor((newProcessedCount / totalKeywords) * 90),
-        99,
-      );
-      setProgress(newProgress);
+      // 전체 진행률 계산 (완료된 키워드 비율에 따라 전체 진행률 배분)
+      const keywordProgress =
+        (newProcessedCount / totalKeywords) *
+        (100 - PROGRESS_WEIGHTS.COMPLETION); // 95%까지만 사용, 나머지 5%는 완료용
+
+      // 진행률 업데이트 (최대 95%까지)
+      setProgress(Math.min(keywordProgress, 100 - PROGRESS_WEIGHTS.COMPLETION));
 
       // 모든 키워드 처리 완료 체크
       if (keywordsToProcess.current.length === 0) {
@@ -183,14 +221,17 @@ export function useRelatedKeyword() {
       // 진행률 업데이트
       const newProcessedCount = processedCount + 1;
       setProcessedCount(newProcessedCount);
-      setProgress(
-        Math.min(10 + Math.floor((newProcessedCount / totalKeywords) * 90), 99),
-      );
+
+      // 진행률 계산 (동일한 방식)
+      const keywordProgress =
+        (newProcessedCount / totalKeywords) *
+        (100 - PROGRESS_WEIGHTS.COMPLETION);
+      setProgress(Math.min(keywordProgress, 100 - PROGRESS_WEIGHTS.COMPLETION));
 
       // 계속 진행
       processNextKeyword();
     }
-  }, [processedCount, totalKeywords]);
+  }, [processedCount, totalKeywords, onGeminiBatchProgress]);
 
   // 검색 실행 핸들러
   const handleSearch = useCallback(() => {
@@ -214,7 +255,7 @@ export function useRelatedKeyword() {
     // 초기화
     setError(null);
     setIsSearching(true);
-    setProgress(10); // 시작 진행률
+    setProgress(PROGRESS_WEIGHTS.INITIAL); // 초기 진행률 설정
     setResults([]);
     setProcessedCount(0);
     setTotalKeywords(keywords.length);

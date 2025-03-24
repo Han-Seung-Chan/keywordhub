@@ -1,21 +1,9 @@
+import { RequestQueue } from "@/class/queue";
 import { ApiResult } from "@/types/api";
+import { delay } from "@/utils/delete";
 
-// ----------------- 타입 정의 -----------------
-
-// 요청 큐 항목 타입
-interface QueueItem<T> {
-  requestFn: () => Promise<T>;
-  resolve: (value: T) => void;
-  reject: (reason?: Error | unknown) => void;
-}
-
-// ----------------- 유틸리티 함수 -----------------
-
-/**
- * 지정된 시간(ms) 동안 대기하는 Promise를 반환하는 함수
- */
-const delay = (ms: number): Promise<void> =>
-  new Promise((resolve) => setTimeout(resolve, ms));
+// 진행률 콜백 타입 정의
+type ProgressCallback = (batchIndex: number, totalBatches: number) => void;
 
 /**
  * 요청 제한 및 재시도 로직이 포함된 fetch 함수
@@ -24,7 +12,7 @@ async function fetchWithThrottleAndRetry(
   url: string,
   options: RequestInit,
   maxRetries: number = 5,
-  initialDelayMs: number = 1000,
+  initialDelayMs: number = 5000,
 ): Promise<Response> {
   let retries = 0;
   let delayMs = initialDelayMs;
@@ -58,68 +46,6 @@ async function fetchWithThrottleAndRetry(
   throw new Error("최대 재시도 횟수 초과");
 }
 
-// ----------------- 요청 큐 클래스 -----------------
-
-/**
- * API 요청을 제한된 속도로 처리하는 큐 시스템
- */
-class RequestQueue {
-  private queue: QueueItem<unknown>[] = [];
-  private processing: boolean = false;
-  private interval: number;
-
-  /**
-   * @param requestsPerMinute 분당 최대 요청 수
-   */
-  constructor(requestsPerMinute: number = 60) {
-    this.interval = Math.ceil(60000 / requestsPerMinute); // 분당 요청 수에 따른 간격 계산
-  }
-
-  /**
-   * 큐에 요청 추가
-   * @param requestFn 실행할 요청 함수
-   */
-  enqueue<T>(requestFn: () => Promise<T>): Promise<T> {
-    return new Promise<T>((resolve, reject) => {
-      this.queue.push({
-        requestFn,
-        resolve,
-        reject,
-      });
-
-      // 큐가 처리 중이 아니면 처리 시작
-      if (!this.processing) {
-        this.processQueue();
-      }
-    });
-  }
-
-  /**
-   * 큐 처리
-   */
-  private async processQueue(): Promise<void> {
-    if (this.queue.length === 0) {
-      this.processing = false;
-      return;
-    }
-
-    this.processing = true;
-    const { requestFn, resolve, reject } = this.queue.shift()!;
-
-    try {
-      // 요청 실행
-      const result = await requestFn();
-      resolve(result);
-    } catch (error) {
-      reject(error);
-    }
-
-    // 다음 요청 전 지정된 간격만큼 대기
-    await delay(this.interval);
-    this.processQueue();
-  }
-}
-
 // ----------------- 전역 인스턴스 -----------------
 
 // 전역 요청 큐 인스턴스 생성 (애플리케이션 전체에서 공유)
@@ -133,11 +59,13 @@ const geminiRequestQueue = new RequestQueue(30); // 분당 30개 요청으로 �
  *
  * @param keyword 검색 키워드
  * @param relatedKeywords 연관 키워드 배열
+ * @param onProgress 진행률 콜백 함수
  * @returns 스코어 배열 또는 오류
  */
 export async function fetchGeminiScores(
   keyword: string,
   relatedKeywords: string[],
+  onProgress?: ProgressCallback,
 ): Promise<ApiResult<number[]>> {
   try {
     // 연관 키워드가 없는 경우 빈 배열 반환
@@ -170,6 +98,11 @@ export async function fetchGeminiScores(
       console.log(
         `배치 ${i + 1}/${batches.length} 처리 중... (${batch.length}개 키워드)`,
       );
+
+      // 진행 상황 콜백 호출 - 배치 진행 상황 알림
+      if (onProgress) {
+        onProgress(i, batches.length);
+      }
 
       try {
         // 큐를 통해 요청 제한 준수
@@ -241,6 +174,11 @@ export async function fetchGeminiScores(
         const defaultScores = Array(batch.length).fill(1000);
         allResults.push(...defaultScores);
       }
+    }
+
+    // 모든 배치 처리 완료 - 최종 진행 상황 알림
+    if (onProgress) {
+      onProgress(batches.length, batches.length);
     }
 
     console.log("Gemini 최종 스코어:", allResults);

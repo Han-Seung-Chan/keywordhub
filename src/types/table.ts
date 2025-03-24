@@ -13,7 +13,10 @@ export interface KeywordData {
   plAvgDepth: number;
   pcYearData: DataLabResponse;
   mobileYearData: DataLabResponse;
-  totalCnt: number;
+  totalCnt?: number;
+  relevanceScore?: number;
+  relKeyword?: string;
+  searchKeyword?: string;
 }
 
 // 헤더 정보를 담는 인터페이스
